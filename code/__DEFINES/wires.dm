@@ -51,4 +51,6 @@
 #define WIRE_PRIZEVEND "Emergency Prize Vend"
 #define WIRE_RESETOWNER "Reset Owner"
 #define WIRE_AGELIMIT "Age Limit"
+#define WIRE_EJECTMODULE "Eject Module"
+#define WIRE_EJECTAI "Eject AI"
 
