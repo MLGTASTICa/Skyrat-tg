@@ -3867,6 +3867,7 @@
 #include "modular_skyrat\modules\radiosound\code\game\objects\items\devices\radio\headset.dm"
 #include "modular_skyrat\modules\rigs\rig.dm"
 #include "modular_skyrat\modules\rigs\rig_modules.dm"
+#include "modular_skyrat\modules\rigs\rig_wiring.dm"
 #include "modular_skyrat\modules\roboclothes\code\clothing\robotics_clothing.dm"
 #include "modular_skyrat\modules\roboclothes\code\vending\wardrobes.dm"
 #include "modular_skyrat\modules\ruins\space.dm"

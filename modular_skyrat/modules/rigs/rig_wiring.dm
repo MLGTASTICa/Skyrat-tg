@@ -19,11 +19,11 @@
 		if(WIRE_AI) // Disable or enable AI control
 			RIG.AIcontrol = !RIG.AIcontrol
 		if(WIRE_EJECTAI)
-			RIG.AI.forceMove(loc)
+			RIG.AI.forceMove(RIG.loc)
 		if(WIRE_EJECTMODULE)
 			var/obj/item/rig_modules/module = pick(RIG.modules)
-			module.forceMove(loc)
-			modules -= module
+			module.forceMove(RIG.loc)
+			RIG.modules -= module
 			module.remove_ability(RIG)
 
 /datum/wires/rig_suit/on_cut(wire, mend)
