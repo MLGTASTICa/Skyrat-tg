@@ -6,12 +6,13 @@
 	resistance_flags = NONE
 	max_integrity = 500 // Rigs are tough
 	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 85, BIO = 100, RAD = 25, FIRE = 95, ACID = 95)
-	/// The rig clothing
+	/// The rig clothing , stored in a list so we can track them easily.
 	var/list/suit_pieces = list()
-	suit_pieces["GLOVES"] = /obj/item/clothing/gloves/rig_suit
-	suit_pieces["VEST"] = /obj/item/clothing/suit/armor/rig_suit
-	suit_pieces["HELMET"] = /obj/item/clothing/head/helmet/rig_suit
-	suit_pieces["BOOTS"] =  /obj/item/clothing/shoes/rig_suit
+	/// The rig parts,  used when a new rig suit is created to fill up suit pieces
+	var/vest = /obj/item/clothing/suit/armor/rig_suit
+	var/helmet = /obj/item/clothing/head/helmet/rig_suit
+	var/gloves = /obj/item/clothing/gloves/rig_suit
+	var/boots = /obj/item/clothing/shoes/rig_suit
 	/// The AI this rig is currently hosting if any
 	var/mob/living/AI
 	/// The modules that this rig currently has installed
@@ -30,6 +31,16 @@
 	var/AIcontrol = 1
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
+
+/// We add the individual suit components and the wires datum.
+/obj/item/rig_suit/New()
+	wires = new /datum/wires/rig_suit(src)
+	suit_pieces[1] += new helmet
+	suit_pieces[2] += new vest
+	suit_pieces[3] += new gloves
+	suit_pieces[4] += new boots
+
+/obj/item/rig_suit/equipped(mob/living/owner)
 
 /obj/item/rig_suit/proc/deploy()
 
