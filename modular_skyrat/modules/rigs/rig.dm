@@ -1,4 +1,5 @@
 /obj/item/rig_suit
+	name = "RIG Suit"
 	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'
 	icon_state = "rig_back_default"
 	w_class = WEIGHT_CLASS_BULKY
@@ -36,9 +37,9 @@
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
 	/// The datum to deploy the suit
-	var/datum/action/item_action/rig_suit/deploy = /datum/action/item_action/rig_suit/deploy
+	var/datum/action/item_action/rig_suit/deploy/deploy
 	/// The datum to remove the suit after  we are finished wrecking nukies in it
-	var/datum/action/item_action/rig_suit/undeploy = /datum/action/item_action/rig_suit/undeploy
+	var/datum/action/item_action/rig_suit/undeploy/undeploy
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/New()
@@ -48,6 +49,7 @@
 	suit_pieces[RIG_GLOVES] += new gloves
 	suit_pieces[RIG_SHOES] += new boots
 	deploy = new(src)
+	undeploy = new(src)
 
 /// Called when they put it on the back
 /obj/item/rig_suit/equipped(mob/living/owner)
@@ -69,14 +71,12 @@
 	name = "Undeploy RIG"
 	button_icon_state = ""
 
-/obj/item/rig_suit/ui_action_click(mob/user, actiontype)
-	if(istype(actiontype, deploy))
-		deploy()
-		return TRUE
-	if(istype(actiontype, undeploy))
-		undeploy()
-		return TRUE
-	..()
+///obj/item/rig_suit/ui_action_click(mob/user, actiontype)
+//	if(istype(actiontype, deploy))
+//		deploy()
+//	if(istype(actiontype, undeploy))
+//		undeploy()
+// ..()
 
 /obj/item/rig_suit/proc/deploy()
 
