@@ -107,6 +107,7 @@
 	deployed = TRUE
 	powered = TRUE
 	power_modules()
+	START_PROCESSING
 	undeploy.owner = wearer
 
 /obj/item/rig_suit/proc/undeploy()
@@ -115,6 +116,7 @@
 	deployed = FALSE
 	powered = FALSE
 	REMOVE_TRAIT(src, TRAIT_NODROP, src)
+	STOP_PROCESSING
 	var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
 	var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
 	var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
@@ -185,5 +187,9 @@
 	STR.max_combined_w_class = 5
 	STR.max_w_class = WEIGHT_CLASS_SMALL
 	STR.max_items = 5
+
+/obj/item/rig_suit/process(delta_time)
+	. = ..()
+
 
 
