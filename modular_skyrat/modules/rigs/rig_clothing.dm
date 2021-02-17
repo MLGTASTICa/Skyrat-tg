@@ -33,3 +33,23 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 
+/obj/item/clothing/gloves/rig_suit/Initialize()
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, src)
+
+/obj/item/clothing/suit/armor/rig_suit/Initialize()
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, src)
+
+/obj/item/clothing/head/helmet/rig_suit/Initialize()
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, src)
+
+/obj/item/clothing/shoes/rig_suit/Initialize()
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, src)
+
+
+
+
+

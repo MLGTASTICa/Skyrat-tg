@@ -3,7 +3,7 @@
 	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'
 	icon_state = "rig_back_default"
 	w_class = WEIGHT_CLASS_BULKY
-	slot_flags = ITEM_SLOT_BACK // Replaces the backpack , a fair trade-off for a mecha armour
+	slot_flags = ITEM_SLOT_BACK// Replaces the backpack , a fair trade-off for a mecha armour
 	resistance_flags = NONE
 	max_integrity = 500 // Rigs are tough
 	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 85, BIO = 100, RAD = 25, FIRE = 95, ACID = 95)
@@ -23,11 +23,11 @@
 	/// the only mob that may unlock this armour , if chosen
 	var/mob/living/acces_owner
 	/// Whoever is currently wearing the rigsuit
-	var/mob/living/wearer
+	var/mob/living/carbon/human/wearer
 	/// Is it locked ?
 	var/locked = FALSE
 	/// Var to check if maintenance panel is open or not
-	var/panel = TRUE
+	var/panel = FALSE
 	/// if its currently powered or not
 	var/powered = FALSE
 	/// Are we deployed on the user currently?
@@ -40,24 +40,40 @@
 	var/datum/action/item_action/rig_suit/deploy/deploy
 	/// The datum to remove the suit after  we are finished wrecking nukies in it
 	var/datum/action/item_action/rig_suit/undeploy/undeploy
+	var/list/datum/action/item_action/rig_suit/module/module_actions
 
 /// We add the individual suit components and the wires datum.
-/obj/item/rig_suit/New()
+/obj/item/rig_suit/Initialize()
+	. = ..()
 	wires = new /datum/wires/rig_suit(src)
-	suit_pieces[RIG_HELMET] += new helmet
-	suit_pieces[RIG_VEST] += new vest
-	suit_pieces[RIG_GLOVES] += new gloves
-	suit_pieces[RIG_SHOES] += new boots
 	deploy = new(src)
+	deploy.owner = null
 	undeploy = new(src)
+	undeploy.owner = null
+	suit_pieces.Add(new helmet)
+	suit_pieces.Add(new vest)
+	suit_pieces.Add(new gloves)
+	suit_pieces.Add(new boots)
+
+//***
+///obj/item/rig_suit/New()
+//	wires = new /datum/wires/rig_suit(src)
+//	suit_pieces[RIG_HELMET] += new helmet
+//	suit_pieces[RIG_VEST] += new vest
+//	suit_pieces[RIG_GLOVES] += new gloves
+//	suit_pieces[RIG_SHOES] += new boots
+//	deploy = new(src)
+//	/undeploy = new(src)
+//	/
 
 /// Called when they put it on the back
-/obj/item/rig_suit/equipped(mob/living/owner)
+/obj/item/rig_suit/equipped(mob/living/owner, slot)
 	. = ..()
-	wearer = owner
-	deploy.Grant(wearer)
-	undeploy.Grant(wearer)
-	ADD_TRAIT(src, TRAIT_NODROP, src) /// No proc for when we remove something from our backpack slot , so we make it no_Drop and add a ability to remove it so we can handle it properly
+	if(slot == ITEM_SLOT_BACK)
+		wearer = owner
+		deploy.owner = wearer
+		undeploy.owner = wearer
+		ADD_TRAIT(src, TRAIT_NODROP, src) /// No proc for when we remove something from our backpack slot , so we make it no_Drop and add a ability to remove it so we can handle it properly
 
 /datum/action/item_action/rig_suit
 	check_flags = AB_CHECK_CONSCIOUS
@@ -71,24 +87,72 @@
 	name = "Undeploy RIG"
 	button_icon_state = ""
 
-///obj/item/rig_suit/ui_action_click(mob/user, actiontype)
-//	if(istype(actiontype, deploy))
-//		deploy()
-//	if(istype(actiontype, undeploy))
-//		undeploy()
-// ..()
+/obj/item/rig_suit/ui_action_click(mob/user, actiontype)
+	if(istype(actiontype, deploy))
+		deploy()
+	if(istype(actiontype, undeploy))
+		undeploy()
+	..()
+
+/obj/item/rig_suit/proc/power_modules()
 
 /obj/item/rig_suit/proc/deploy()
+	if(deployed)
+		return
+	to_chat(wearer,text = "Deploying rig")
+	wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
+	wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
+	wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
+	wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
+	deployed = TRUE
+	powered = TRUE
+	power_modules()
+	undeploy.owner = wearer
 
 /obj/item/rig_suit/proc/undeploy()
+	if(!deployed)
+		return
+	deployed = FALSE
+	powered = FALSE
+	REMOVE_TRAIT(src, TRAIT_NODROP, src)
+	var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
+	var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
+	var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
+	var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
+	if(istype(cloth1, /obj/item/clothing/shoes/rig_suit))
+		wearer.doUnEquip(cloth1, TRUE, loc, FALSE, TRUE, FALSE)
+		cloth1.forceMove(suit_pieces[4])
+	if(istype(cloth2, /obj/item/clothing/gloves/rig_suit))
+		wearer.doUnEquip(cloth2, TRUE, loc, FALSE, TRUE, FALSE)
+		cloth2.forceMove(suit_pieces[3])
+	if(istype(cloth3, /obj/item/clothing/suit/armor/rig_suit))
+		wearer.doUnEquip(cloth3, TRUE, loc, FALSE, TRUE, FALSE)
+		cloth3.forceMove(suit_pieces[2])
+	if(istype(cloth4, /obj/item/clothing/head/helmet/rig_suit))
+		wearer.doUnEquip(cloth4, TRUE, loc, FALSE, TRUE, FALSE)
+		cloth4.forceMove(suit_pieces[1])
+	for(var/obj/item/clothing/cloth in contents)
+		wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
 
-/obj/item/rig_suit/proc/take_control(mob/living/M)
-
-/obj/item/rig_suit/proc/remove_control(mob/living/M)
+/mob/living/carbon/human/proc/equip_to_slot_forcefully(clothing, slot, rig)
+	var/obj/item/trash = get_item_by_slot(slot)
+	if(trash)
+		doUnEquip(trash, TRUE, loc, FALSE, TRUE, FALSE)
+		trash.forceMove(rig)
+	equip_to_slot_if_possible(clothing, slot, FALSE, FALSE)
+	switch(slot)
+		if(ITEM_SLOT_GLOVES)
+			update_inv_gloves()
+		if(ITEM_SLOT_OCLOTHING)
+			update_inv_wear_suit()
+		if(ITEM_SLOT_HEAD)
+			update_inv_head()
+		if(ITEM_SLOT_FEET)
+			update_inv_shoes()
 
 /obj/item/rig_suit/screwdriver_act(mob/living/user, obj/item/I)
 	panel = !panel
-	if(panel)
+	if(!panel)
 		visible_message("[user] opens the maintenance panel on the [src]")
 		to_chat(user,text = "You open the maintenance panel on the [src]")
 	else
@@ -114,9 +178,9 @@
 		else
 			to_chat(user,text = "There is already a battery in the [src]")
 
-
 /obj/item/rig_suit/ComponentInitialize() // Some storage for this rig , so they can still store a few mags or supplies
 	. = ..()
+	AddComponent(/datum/component/storage/concrete)
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_combined_w_class = 5
 	STR.max_w_class = WEIGHT_CLASS_SMALL
