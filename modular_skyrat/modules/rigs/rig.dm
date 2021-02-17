@@ -35,12 +35,13 @@
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/New()
 	wires = new /datum/wires/rig_suit(src)
-	suit_pieces[1] += new helmet
-	suit_pieces[2] += new vest
-	suit_pieces[3] += new gloves
-	suit_pieces[4] += new boots
+	suit_pieces[RIG_HELMET] = new helmet
+	suit_pieces[RIG_VEST] = new vest
+	suit_pieces[RIG_GLOVES] = new gloves
+	suit_pieces[RIG_SHOES] = new boots
 
 /obj/item/rig_suit/equipped(mob/living/owner)
+	. = ..()
 
 /obj/item/rig_suit/proc/deploy()
 
