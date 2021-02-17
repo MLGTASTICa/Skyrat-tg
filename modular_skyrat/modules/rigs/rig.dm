@@ -23,14 +23,22 @@
 	var/mob/living/acces_owner
 	/// Whoever is currently wearing the rigsuit
 	var/mob/living/wearer
+	/// Is it locked ?
+	var/locked = FALSE
+	/// Var to check if maintenance panel is open or not
+	var/panel = TRUE
 	/// if its currently powered or not
-	var/powered = 0
+	var/powered = FALSE
 	/// Are we deployed on the user currently?
-	var/deployed = 0
+	var/deployed = FALSE
 	/// Can the installed PAI control it anymore?
-	var/AIcontrol = 1
+	var/AIcontrol = TRUE
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
+	/// The datum to deploy the suit
+	var/datum/action/item_action/rig_suit/deploy
+	/// The datum to remove the suit after  we are finished wrecking nukies in it
+	var/datum/action/item_action/rig_suit/undeploy
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/New()
@@ -39,9 +47,36 @@
 	suit_pieces[RIG_VEST] = new vest
 	suit_pieces[RIG_GLOVES] = new gloves
 	suit_pieces[RIG_SHOES] = new boots
+	deploy = new(src)
 
+/// Called when they put it on the back
 /obj/item/rig_suit/equipped(mob/living/owner)
 	. = ..()
+	wearer = owner
+	deploy.Grant(wearer)
+	undeploy.Grant(wearer)
+	ADD_TRAIT(src, TRAIT_NODROP, src) /// No proc for when we remove something from our backpack slot , so we make it no_Drop and add a ability to remove it so we can handle it properly
+
+/datum/action/item_action/rig_suit
+	check_flags = AB_CHECK_CONSCIOUS
+	button_icon_state = null
+
+/datum/action/item_action/rig_suit/deploy
+	name = "Deploy RIG"
+	button_icon_state = ""
+
+/datum/action/item_action/rig_suit/undeploy
+	name = "Undeploy RIG"
+	button_icon_state = ""
+
+/obj/item/rig_suit/ui_action_click(mob/user, actiontype)
+	if(istype(actiontype, deploy))
+		deploy()
+		return TRUE
+	if(istype(actiontype, undeploy))
+		undeploy()
+		return TRUE
+	..()
 
 /obj/item/rig_suit/proc/deploy()
 
@@ -51,7 +86,34 @@
 
 /obj/item/rig_suit/proc/remove_control(mob/living/M)
 
-/obj/item/rig_suit/attackby
+/obj/item/rig_suit/screwdriver_act(mob/living/user, obj/item/I)
+	panel = !panel
+	if(panel)
+		visible_message("[user] opens the maintenance panel on the [src]")
+		to_chat(user,text = "You open the maintenance panel on the [src]")
+	else
+		visible_message("[user] closes the maintenance panel on the [src]")
+		to_chat(user,text = "You close the maintenance panel on the [src]")
+
+/obj/item/rig_suit/wirecutter_act(mob/living/user, obj/item/I)
+	if(!panel)
+		wires.interact(user)
+
+/obj/item/rig_suit/crowbar_act(mob/living/user, obj/item/I)
+	if(!panel)
+		if(cell)
+			cell.forceMove(loc)
+			cell = null
+
+/obj/item/rig_suit/attackby(obj/item/I, mob/living/user, params)
+	. = ..()
+	if(istype(I,/obj/item/stock_parts/cell))
+		if(!cell)
+			cell = I
+			qdel(I)
+		else
+			to_chat(user,text = "There is already a battery in the [src]")
+
 
 /obj/item/rig_suit/ComponentInitialize() // Some storage for this rig , so they can still store a few mags or supplies
 	. = ..()

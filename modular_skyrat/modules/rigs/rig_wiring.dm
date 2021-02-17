@@ -20,6 +20,7 @@
 			RIG.AIcontrol = !RIG.AIcontrol
 		if(WIRE_EJECTAI)
 			RIG.AI.forceMove(RIG.loc)
+			RIG.AI = null
 		if(WIRE_EJECTMODULE)
 			var/obj/item/rig_module/module = pick(RIG.modules)
 			module.forceMove(RIG.loc)
