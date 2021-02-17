@@ -21,7 +21,7 @@
 		if(WIRE_EJECTAI)
 			RIG.AI.forceMove(RIG.loc)
 		if(WIRE_EJECTMODULE)
-			var/obj/item/rig_modules/module = pick(RIG.modules)
+			var/obj/item/rig_module/module = pick(RIG.modules)
 			module.forceMove(RIG.loc)
 			RIG.modules -= module
 			module.remove_ability(RIG)
