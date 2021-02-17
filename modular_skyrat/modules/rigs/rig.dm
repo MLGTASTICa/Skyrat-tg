@@ -36,17 +36,17 @@
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
 	/// The datum to deploy the suit
-	var/datum/action/item_action/rig_suit/deploy
+	var/datum/action/item_action/rig_suit/deploy = /datum/action/item_action/rig_suit/deploy
 	/// The datum to remove the suit after  we are finished wrecking nukies in it
-	var/datum/action/item_action/rig_suit/undeploy
+	var/datum/action/item_action/rig_suit/undeploy = /datum/action/item_action/rig_suit/undeploy
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/New()
 	wires = new /datum/wires/rig_suit(src)
-	suit_pieces[RIG_HELMET] = new helmet
-	suit_pieces[RIG_VEST] = new vest
-	suit_pieces[RIG_GLOVES] = new gloves
-	suit_pieces[RIG_SHOES] = new boots
+	suit_pieces[RIG_HELMET] += new helmet
+	suit_pieces[RIG_VEST] += new vest
+	suit_pieces[RIG_GLOVES] += new gloves
+	suit_pieces[RIG_SHOES] += new boots
 	deploy = new(src)
 
 /// Called when they put it on the back
