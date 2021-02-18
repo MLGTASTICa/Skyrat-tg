@@ -22,11 +22,11 @@
 	/// If it got destroyed by an EMP or ruined
 	var/fried
 	/// ability to add
-	var/datum/action/rig_module/action
+	var/datum/action/rig_module/action = /datum/action/rig_module/
 
 /obj/item/rig_module/proc/add_ability(obj/item/rig_suit/target)
 	if(!action)
-		action = new /datum/action/rig_module(src)
+		action = new action(src)
 	action.Grant(target.wearer)
 	action.module = src
 	action.rig = target
@@ -75,3 +75,26 @@
 		return FALSE
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
+
+/obj/item/rig_module/reagent
+	name = "Combat injector module"
+	desc = "Adds a reagent from a beaker of your choice into your bloodstream!"
+	fire_power_use = 300
+
+/obj/item/rig_module/reagent/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_combined_w_class = 5
+	STR.max_items = 5
+	STR.insert_preposition = "in"
+	STR.set_holdable(list(
+		/obj/item/reagent_containers/glass/beaker,
+		/obj/item/reagent_containers/glass/bottle,
+		/obj/item/reagent_containers/food/drinks/waterbottle,
+		/obj/item/reagent_containers/food/condiment,
+	))
+/datum/action/rig_module/reagent
+	name = "Reagent injector"
+	desc = "I swear its not black powder!"
+
+

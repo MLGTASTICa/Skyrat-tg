@@ -168,6 +168,7 @@ datum/action/rig_suit/undeploy
 
 /// Wirecutter act , handles displaying the wires
 /obj/item/rig_suit/wirecutter_act(mob/living/user, obj/item/I)
+	ui_interact(wearer)
 	if(!panel)
 		wires.interact(user)
 
@@ -211,6 +212,28 @@ datum/action/rig_suit/undeploy
 		unpower_suit()
 		return
 	cell.charge -= calculated_power_use
+
+/obj/item/rig_suit/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "RIGSuit", name)
+		ui.open()
+
+/obj/item/rig_suit/ui_data(mob/user)
+	var/list/data = list()
+	data["modules"] = modules
+	data["cell"] = cell
+	data["cellcharge"] = cell.charge
+	return data
+
+/obj/item/rig_suit/ui_act(action, params)
+	if(..())
+		return
+	switch(action)
+		if("bruh")
+			to_chat(wearer, text = "Bruh!")
+
+
 
 
 
