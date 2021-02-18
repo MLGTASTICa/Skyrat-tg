@@ -70,11 +70,14 @@
 		wearer = owner
 		if(!deploy)
 			deploy = new /datum/action/rig_suit/deploy(src)
-			deploy.Grant(wearer)
+		deploy.Grant(wearer)
 
 /obj/item/rig_suit/dropped(mob/user, silent)
 	. = ..()
-	deploy.Remove(wearer)
+	wearer = null
+	if(deploy)
+		deploy.Remove(user)
+
 /datum/action/item_action/rig_suit
 	name = "Test 1 2 3 4 5"
 	check_flags = AB_CHECK_CONSCIOUS
@@ -97,30 +100,27 @@ datum/action/rig_suit/undeploy
 
 /// Same as below desc
 /datum/action/rig_suit/deploy/Trigger()
-	rig.deploy()
-	Remove(wearer)
-	var/datum/action/rig_suit/undeploy/additive = null
-	if(rig.actions)
-		additive = rig.actions.Find(/datum/action/rig_suit/undeploy,1,0)
-	if(!additive)
-		additive = new /datum/action/rig_suit/undeploy(rig)
-	additive.Grant(wearer)
+	if(rig.deploy())
+		Remove(wearer)
+		var/datum/action/rig_suit/undeploy/additive = null
+		if(rig.actions)
+			additive = rig.actions.Find(/datum/action/rig_suit/undeploy,1,0)
+		if(!additive)
+			additive = new /datum/action/rig_suit/undeploy(rig)
+		additive.Grant(wearer)
 
 /// The datum for undeploying , we remove it from displaying on use and replace it with the deploy one , or make a new deploy one if it magically disspears
 /datum/action/rig_suit/undeploy/Trigger()
 	rig.undeploy()
 	Remove(wearer)
-	var/datum/action/rig_suit/undeploy/additive = null
-	if(rig.actions)
-		additive = rig.actions.Find(/datum/action/rig_suit/deploy,1,0)
-	if(!additive)
-		additive = new /datum/action/rig_suit/deploy(rig)
-	additive.Grant(wearer)
+	if(!rig.deploy)
+		rig.deploy= new /datum/action/rig_suit/deploy(rig)
+	rig.deploy.Grant(wearer)
 
-///  Deploys the rig , making the backpack undroppable and forcefully equipping the gear.
+///  Deploys the rig , making the backpack undroppable and forcefully equipping the gear. Make sure to return TRUE or FALSE because we use this to  handle some button changes
 /obj/item/rig_suit/proc/deploy()
 	if(!cell)
-		return
+		return FALSE //
 	ADD_TRAIT(src, TRAIT_NODROP, src)
 	to_chat(wearer,text = "Deploying rig")
 	wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
@@ -129,6 +129,7 @@ datum/action/rig_suit/undeploy
 	wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
 	deployed = TRUE
 	power_suit()
+	return TRUE
 
 /// Unpowers the suit , sets all the vars , removes the no drop trait and then unequips all the  rig clothes and puts all the stored clothes in contents on the user.
 /obj/item/rig_suit/proc/undeploy()

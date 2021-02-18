@@ -20,20 +20,23 @@
 	/// If it got destroyed by an EMP or ruined
 	var/fried
 	/// ability to add
-	var/obj/effect/proc_holder/rig_suit/proc_handle = /obj/effect/proc_holder/rig_suit
+	var/datum/action/rig_module/action
 
 /obj/item/rig_module/proc/add_ability(obj/item/rig_suit/target)
-	var/obj/effect/proc_holder/rig_suit/proc_handle_temporary = new proc_handle(src)
-	target.wearer.AddAbility(proc_handle_temporary)
+	if(!action)
+		action = new /datum/action/rig_module(src)
+	action.Grant(target.wearer)
 
 /obj/item/rig_module/proc/remove_ability(obj/item/rig_suit/target)
-	target.wearer.RemoveAbility(proc_handle)
+	action.Remove(target.wearer)
+
 
 /obj/item/rig_module/emag_act(mob/user, obj/item/card/emag/E)
 	. = ..()
 
 /obj/item/rig_module/attackby(obj/item/I, mob/living/user, params)
 	. = ..()
+/*
 /obj/effect/proc_holder/rig_suit
 	name = "Rig deploy"
 	desc = "Deploy a module"
@@ -46,6 +49,7 @@
 	var/datum/action/rig_module/rig_action = base_action
 	if(!(rig_action.rig.powered))
 		return FALSE
+*/
 
 /datum/action/rig_module
 	name = "Deploy module"

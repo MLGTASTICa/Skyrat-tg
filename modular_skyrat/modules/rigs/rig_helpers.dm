@@ -42,6 +42,8 @@
 	if(calculate_power())
 		powered = 1
 		START_PROCESSING(SSobj,src)
+	else
+		return FALSE
 	for(var/obj/item/rig_module/item in modules)
 		item.add_ability(src)
 
