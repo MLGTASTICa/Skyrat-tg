@@ -36,12 +36,11 @@
 	var/AIcontrol = TRUE
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
-	var/datum/action/rig_suit/deploy/deploy
+	/// The rig suit pieces go here , the list ontop only holds references.
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/Initialize()
 	. = ..()
-	deploy = new
 	wires = new /datum/wires/rig_suit(src)
 	suit_pieces.Add(new helmet)
 	suit_pieces.Add(new vest)
@@ -64,19 +63,47 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		deploy.Grant(wearer)
-		ADD_TRAIT(src, TRAIT_NODROP, src) /// No proc for when we remove something from our backpack slot , so we make it no_Drop and add a ability to remove it so we can handle it properly
+		var/datum/action/rig_suit/deploy/deplot = new /datum/action/rig_suit/deploy(src)
+		deplot.Grant(wearer)
 
 /datum/action/item_action/rig_suit
 	name = "Test 1 2 3 4 5"
 	check_flags = AB_CHECK_CONSCIOUS
 	button_icon_state = null
 
+/datum/action/rig_suit
+	name = "Deploy RIG"
+	var/obj/item/rig_suit/rig
+	var/mob/living/wearer
+
+/datum/action/rig_suit/link_to(Target)
+	. = ..()
+	rig = target
+	wearer = rig.wearer
 /datum/action/rig_suit/deploy
 	name = "Deploy RIG"
 
+/datum/action/rig_suit/deploy/Trigger()
+	rig.deploy()
+	Remove(wearer)
+	var/datum/action/rig_suit/undeploy/additive
+	if(rig.actions)
+		additive = rig.actions.Find(/datum/action/rig_suit/undeploy,1,0)
+	if(!additive)
+		additive = new /datum/action/rig_suit/undeploy(rig)
+	additive.Grant(wearer)
 /datum/action/rig_suit/undeploy
 	name = "Undeploy RIG"
+
+/datum/action/rig_suit/undeploy/Trigger()
+	rig.undeploy()
+	Remove(wearer)
+	var/datum/action/rig_suit/undeploy/additive
+	if(rig.actions)
+		additive = rig.actions.Find(/datum/action/rig_suit/deploy,1,0)
+	if(!additive)
+		additive = new /datum/action/rig_suit/deploy(rig)
+	additive.Grant(wearer)
 
 /obj/item/rig_suit/ui_action_click(mob/user, actiontype)
 	if(istype(actiontype, /datum/action/rig_suit/deploy))
@@ -90,10 +117,7 @@
 		item.add_ability(src)
 
 /obj/item/rig_suit/proc/deploy()
-	var/datum/action/rig_suit/undeploy/deplo = new /datum/action/rig_suit/undeploy(src)
-	deplo.Grant(wearer)
-	if(deployed)
-		return
+	ADD_TRAIT(src, TRAIT_NODROP, src)
 	to_chat(wearer,text = "Deploying rig")
 	wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
 	wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
@@ -104,9 +128,8 @@
 	power_modules()
 	START_PROCESSING(SSobj,src)
 
+
 /obj/item/rig_suit/proc/undeploy()
-	if(!deployed)
-		return
 	STOP_PROCESSING(SSobj,src)
 	deployed = FALSE
 	powered = FALSE
@@ -117,21 +140,23 @@
 	var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
 	if(istype(cloth1, /obj/item/clothing/shoes/rig_suit))
 		wearer.dropItemToGround(cloth1, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth1.forceMove(suit_pieces[4])
+		cloth1.moveToNullspace()
 	if(istype(cloth2, /obj/item/clothing/gloves/rig_suit))
 		wearer.dropItemToGround(cloth2, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth2.forceMove(suit_pieces[3])
+		cloth2.moveToNullspace()
 	if(istype(cloth3, /obj/item/clothing/suit/armor/rig_suit))
 		wearer.dropItemToGround(cloth3, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth3.forceMove(suit_pieces[2])
+		cloth3.moveToNullspace()
 	if(istype(cloth4, /obj/item/clothing/head/helmet/rig_suit))
 		wearer.dropItemToGround(cloth4, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth4.forceMove(suit_pieces[1])
+		cloth4.moveToNullspace()
 	for(var/obj/item/clothing/cloth in contents)
 		wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
 
 
 /mob/living/carbon/human/proc/equip_to_slot_forcefully(clothing, slot, rig)
+	if(!clothing) /// Its deleted , bruh!
+		return
 	var/obj/item/trash = get_item_by_slot(slot)
 	if(trash)
 		doUnEquip(trash, TRUE, loc, FALSE, TRUE, FALSE)
@@ -171,17 +196,20 @@
 	if(istype(I,/obj/item/stock_parts/cell))
 		if(!cell)
 			cell = I
-			qdel(I)
+			I.moveToNullspace()
 		else
 			to_chat(user,text = "There is already a battery in the [src]")
+	if(istype(I,/obj/item/rig_module))
+		modules.Add(I)
+		I.moveToNullspace()
 
-/obj/item/rig_suit/ComponentInitialize() // Some storage for this rig , so they can still store a few mags or supplies
+/obj/item/rig_suit/ComponentInitialize() // Some storage for this rig , so they can still store a few mags or supplies. Clothing goes here automatically if we deploy the rig while its on and we also pull it from here!
 	. = ..()
 	AddComponent(/datum/component/storage/concrete)
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_combined_w_class = 5
+	STR.max_combined_w_class = 1
 	STR.max_w_class = WEIGHT_CLASS_SMALL
-	STR.max_items = 5
+	STR.max_items = 4
 
 /obj/item/rig_suit/process(delta_time)
 	. = ..()
