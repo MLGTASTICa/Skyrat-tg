@@ -10,13 +10,15 @@
 	/// If the item is emagged
 	var/emagged
 	/// Cooldown for the use of this moduless ability
-	var/cooldown
+	var/cooldown = 50
 	/// Power usage when we fire it or use it
-	var/use_power
+	var/use_power = 0
+	/// Var for keeping track of time don't edit
+	var/cooldown_timer
 	/// Power usage when its sitting doing nothing
-	var/idle_power_use
+	var/idle_power_use = 0
 	// Power usage when we fire it , for one time actions
-	var/fire_power_use
+	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
 	var/fried
 	/// ability to add
@@ -26,6 +28,8 @@
 	if(!action)
 		action = new /datum/action/rig_module(src)
 	action.Grant(target.wearer)
+	action.module = src
+	action.rig = target
 
 /obj/item/rig_module/proc/remove_ability(obj/item/rig_suit/target)
 	action.Remove(target.wearer)
@@ -59,11 +63,15 @@
 	icon_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "deploy_box"
 	var/obj/item/rig_suit/rig
+	var/obj/item/rig_module/module
 
-/datum/action/rig_module/New(Target)
-	. = ..()
-	rig = target
-
-///Handles opening and closing the module
+///Handles module stuff!
 /datum/action/rig_module/Trigger()
-	to_chat(owner, text = "Mors")
+	if(!rig.powered)
+		return FALSE
+	if(!rig.use_power(module.fire_power_use))
+		return FALSE
+	if(world.time < module.cooldown_timer)
+		return FALSE
+	to_chat(rig.wearer, text = "Module activated succesfully")
+	module.cooldown_timer = world.time + module.cooldown
