@@ -29,19 +29,21 @@
 /obj/item/rig_suit/proc/calculate_power()
 	if(!cell)
 		return FALSE
+	calculated_power_use = 0
 	for(var/obj/item/rig_module/module_target in modules)
 		if(module_target.active)
 			calculated_power_use += module_target.use_power
 		else
 			calculated_power_use += module_target.idle_power_use
+	calculated_power_use += rig_power_use
 	return TRUE
 
 /obj/item/rig_suit/proc/power_suit()
-	for(var/obj/item/rig_module/item in modules)
-		item.add_ability(src)
 	if(calculate_power())
 		powered = 1
 		START_PROCESSING(SSobj,src)
+	for(var/obj/item/rig_module/item in modules)
+		item.add_ability(src)
 
 /obj/item/rig_suit/proc/unpower_suit()
 	for(var/obj/item/rig_module/item in modules)

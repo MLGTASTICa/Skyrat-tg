@@ -38,6 +38,8 @@
 	var/obj/item/stock_parts/cell/cell
 	/// The amount of power we use per process , calculated!
 	var/calculated_power_use
+	/// The amount of power rig uses by itself
+	var/rig_power_use
 	/// The rig suit pieces go here , the list ontop only holds references.
 	var/datum/action/rig_suit/deploy/deploy
 
@@ -66,9 +68,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		deploy = new /datum/action/rig_suit/deploy(src)
-		deploy.Grant(wearer)
+		if(!deploy)
+			deploy = new /datum/action/rig_suit/deploy(src)
+			deploy.Grant(wearer)
 
+/obj/item/rig_suit/dropped(mob/user, silent)
+	. = ..()
+	deploy.Remove(wearer)
 /datum/action/item_action/rig_suit
 	name = "Test 1 2 3 4 5"
 	check_flags = AB_CHECK_CONSCIOUS
@@ -113,6 +119,8 @@ datum/action/rig_suit/undeploy
 
 ///  Deploys the rig , making the backpack undroppable and forcefully equipping the gear.
 /obj/item/rig_suit/proc/deploy()
+	if(!cell)
+		return
 	ADD_TRAIT(src, TRAIT_NODROP, src)
 	to_chat(wearer,text = "Deploying rig")
 	wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
