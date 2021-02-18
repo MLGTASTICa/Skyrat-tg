@@ -36,20 +36,13 @@
 	var/AIcontrol = TRUE
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
-	/// The datum to deploy the suit
-	var/datum/action/item_action/rig_suit/deploy/deploy
-	/// The datum to remove the suit after  we are finished wrecking nukies in it
-	var/datum/action/item_action/rig_suit/undeploy/undeploy
-	var/list/datum/action/item_action/rig_suit/module/module_actions
+	var/datum/action/rig_suit/deploy/deploy
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/Initialize()
 	. = ..()
+	deploy = new
 	wires = new /datum/wires/rig_suit(src)
-	deploy = new(src)
-	deploy.owner = null
-	undeploy = new(src)
-	undeploy.owner = null
 	suit_pieces.Add(new helmet)
 	suit_pieces.Add(new vest)
 	suit_pieces.Add(new gloves)
@@ -71,32 +64,34 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		deploy.owner = wearer
-		undeploy.owner = wearer
+		deploy.Grant(wearer)
 		ADD_TRAIT(src, TRAIT_NODROP, src) /// No proc for when we remove something from our backpack slot , so we make it no_Drop and add a ability to remove it so we can handle it properly
 
 /datum/action/item_action/rig_suit
+	name = "Test 1 2 3 4 5"
 	check_flags = AB_CHECK_CONSCIOUS
 	button_icon_state = null
 
-/datum/action/item_action/rig_suit/deploy
+/datum/action/rig_suit/deploy
 	name = "Deploy RIG"
-	button_icon_state = ""
 
-/datum/action/item_action/rig_suit/undeploy
+/datum/action/rig_suit/undeploy
 	name = "Undeploy RIG"
-	button_icon_state = ""
 
 /obj/item/rig_suit/ui_action_click(mob/user, actiontype)
-	if(istype(actiontype, deploy))
+	if(istype(actiontype, /datum/action/rig_suit/deploy))
 		deploy()
-	if(istype(actiontype, undeploy))
+	if(istype(actiontype, /datum/action/rig_suit/undeploy))
 		undeploy()
 	..()
 
 /obj/item/rig_suit/proc/power_modules()
+	for(var/obj/item/rig_module/item in modules)
+		item.add_ability(src)
 
 /obj/item/rig_suit/proc/deploy()
+	var/datum/action/rig_suit/undeploy/deplo = new /datum/action/rig_suit/undeploy(src)
+	deplo.Grant(wearer)
 	if(deployed)
 		return
 	to_chat(wearer,text = "Deploying rig")
@@ -107,34 +102,34 @@
 	deployed = TRUE
 	powered = TRUE
 	power_modules()
-	START_PROCESSING
-	undeploy.owner = wearer
+	START_PROCESSING(SSobj,src)
 
 /obj/item/rig_suit/proc/undeploy()
 	if(!deployed)
 		return
+	STOP_PROCESSING(SSobj,src)
 	deployed = FALSE
 	powered = FALSE
 	REMOVE_TRAIT(src, TRAIT_NODROP, src)
-	STOP_PROCESSING
 	var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
 	var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
 	var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
 	var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
 	if(istype(cloth1, /obj/item/clothing/shoes/rig_suit))
-		wearer.doUnEquip(cloth1, TRUE, loc, FALSE, TRUE, FALSE)
+		wearer.dropItemToGround(cloth1, force = TRUE, silent = FALSE, invdrop = TRUE)
 		cloth1.forceMove(suit_pieces[4])
 	if(istype(cloth2, /obj/item/clothing/gloves/rig_suit))
-		wearer.doUnEquip(cloth2, TRUE, loc, FALSE, TRUE, FALSE)
+		wearer.dropItemToGround(cloth2, force = TRUE, silent = FALSE, invdrop = TRUE)
 		cloth2.forceMove(suit_pieces[3])
 	if(istype(cloth3, /obj/item/clothing/suit/armor/rig_suit))
-		wearer.doUnEquip(cloth3, TRUE, loc, FALSE, TRUE, FALSE)
+		wearer.dropItemToGround(cloth3, force = TRUE, silent = FALSE, invdrop = TRUE)
 		cloth3.forceMove(suit_pieces[2])
 	if(istype(cloth4, /obj/item/clothing/head/helmet/rig_suit))
-		wearer.doUnEquip(cloth4, TRUE, loc, FALSE, TRUE, FALSE)
+		wearer.dropItemToGround(cloth4, force = TRUE, silent = FALSE, invdrop = TRUE)
 		cloth4.forceMove(suit_pieces[1])
 	for(var/obj/item/clothing/cloth in contents)
 		wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
+
 
 /mob/living/carbon/human/proc/equip_to_slot_forcefully(clothing, slot, rig)
 	var/obj/item/trash = get_item_by_slot(slot)
@@ -190,6 +185,7 @@
 
 /obj/item/rig_suit/process(delta_time)
 	. = ..()
+
 
 
 
