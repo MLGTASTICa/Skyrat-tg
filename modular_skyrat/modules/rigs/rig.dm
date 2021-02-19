@@ -16,12 +16,20 @@
 	var/boots = /obj/item/clothing/shoes/rig_suit
 	/// The AI this rig is currently hosting if any
 	var/mob/living/AI
+	/// If the AI can use its linked abilities
+	var/AIcontrol = FALSE
 	/// The modules that this rig currently has installed
 	var/list/obj/item/rig_module/modules = list()
-	/// The acces that this rig requires
-	req_access = list()
-	/// the only mob that may unlock this armour , if chosen
-	var/mob/living/acces_owner
+	/// A limit on how many modules we can have
+	var/module_limit = 5
+	/// A limit on the total module weight
+	var/module_weight_limit = 15
+	/// The sum of all module weights
+	var/module_weight_current = 0
+	/// The required acces
+	req_access = ACCESS_MAINT_TUNNELS
+	/// The owner who may deploy this rigsuit if chosen
+	var/mob/living/carbon/human/owner_suit = null
 	/// Whoever is currently wearing the rigsuit
 	var/mob/living/carbon/human/wearer
 	/// Is it locked ?
@@ -32,8 +40,6 @@
 	var/powered = FALSE
 	/// Are we deployed on the user currently?
 	var/deployed = FALSE
-	/// Can the installed PAI control it anymore?
-	var/AIcontrol = TRUE
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
 	/// The amount of power we use per process , calculated!
@@ -204,7 +210,6 @@ datum/action/rig_suit/undeploy
 	STR.max_items = 4
 
 /obj/item/rig_suit/process()
-	. = ..()
 	if(!cell && powered)
 		unpower_suit()
 		return
@@ -221,9 +226,15 @@ datum/action/rig_suit/undeploy
 
 /obj/item/rig_suit/ui_data(mob/user)
 	var/list/data = list()
-	data["modules"] = modules
 	data["cell"] = cell
 	data["cellcharge"] = cell.charge
+	data["power_use"] = calculated_power_use
+	data["module_count"] = modules.len
+	data["maximum_modules"] = module_limit
+	data["maximum_modules_weight"] = module_weight_limit
+	data["module_weight"] = module_weight_current
+	data["ai"] = AI
+
 	return data
 
 /obj/item/rig_suit/ui_act(action, params)
@@ -236,10 +247,17 @@ datum/action/rig_suit/undeploy
 		if("unpower")
 			to_chat(wearer, text= "Powering down suit")
 			unpower_suit()
-
-
-
-
-
-
-
+		if("eject_module")
+			if(modules)
+				var/obj/item/fugitive = pick(modules)
+				fugitive.forceMove(wearer.loc)
+				modules -= fugitive
+		if("become_owner")
+			owner_suit = wearer
+		if("purge_owner")
+			owner_suit = null
+		if("lock_to_id")
+			var/obj/item/id = wearer.get_idcard()
+			req_access = id.GetAccess()
+		if("purge_acces")
+			req_access = null

@@ -40,6 +40,7 @@
 
 /obj/item/rig_suit/proc/power_suit()
 	if(calculate_power())
+		to_chat(wearer, text = "Succesfully calculated power")
 		powered = 1
 		START_PROCESSING(SSobj,src)
 	else

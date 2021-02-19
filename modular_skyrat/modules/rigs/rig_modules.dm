@@ -64,14 +64,15 @@
 	button_icon_state = "deploy_box"
 	var/obj/item/rig_suit/rig
 	var/obj/item/rig_module/module
+	var/dispenser = FALSE
 
 ///Handles module stuff!
 /datum/action/rig_module/Trigger()
 	if(!rig.powered)
 		return FALSE
-	if(!rig.use_power(module.fire_power_use))
-		return FALSE
 	if(world.time < module.cooldown_timer)
+		return FALSE
+	if(!rig.use_power(module.fire_power_use))
 		return FALSE
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
@@ -96,5 +97,6 @@
 /datum/action/rig_module/reagent
 	name = "Reagent injector"
 	desc = "I swear its not black powder!"
+
 
 
