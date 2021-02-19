@@ -31,10 +31,10 @@ export const RIGSuit = (props, context) => {
             <LabeledList.Item label="Current power usage">
               {power_use}
             </LabeledList.Item>
-            <LabeledList.Item label="Installed modules">
+            <LabeledList.Item label="Installed modules count">
               {module_count}
             </LabeledList.Item>
-            <LabeledList.Item label="Maximum modules permitted">
+            <LabeledList.Item label="Maximum modules count">
               {maximum_modules}
             </LabeledList.Item>
             <LabeledList.Item label="Current module weight">
@@ -46,41 +46,27 @@ export const RIGSuit = (props, context) => {
             <LabeledList.Item label="Current AI">
               {ai}
             </LabeledList.Item>
-            <LabeledList.Item label="Power up">
-              <Button
-                content="Power the suit"
-                onClick={() => act('power')} />
-            </LabeledList.Item>
-             <LabeledList.Item label="Power down">
-              <Button
-                content="Unpower the suit"
-                onClick={() => act('unpower')} />
-             </LabeledList.Item>
-             <LabeledList.Item label="Eject a module">
-              <Button
-                content="Eject a module"
-                onClick={() => act('eject_module')} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Become owner">
-              <Button
-                content="Become the owner"
-                onClick={() => act('become_owner')} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Purge current owner">
-              <Button
-                content="Purge current owner"
-                onClick={() => act('remove_owner')} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Lock to current ID acces">
-              <Button
-                content="Lock to current ID acces"
-                onClick={() => act('lock_to_id')} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Purge ID requirements">
-              <Button
-                content="Purge ID requirements"
-                onClick={() => act('purge_acces')} />
-            </LabeledList.Item>
+            <Button
+              content="Power the suit"
+              onClick={() => act('power')} />
+            <Button
+              content="Unpower the suit"
+              onClick={() => act('unpower')} />
+            <Button
+              content="Eject a module"
+              onClick={() => act('eject_module')} />
+            <Button
+              content="Become the owner"
+              onClick={() => act('become_owner')} />
+            <Button
+              content="Purge current owner"
+              onClick={() => act('remove_owner')} />
+            <Button
+              content="Lock to current ID acces"
+              onClick={() => act('lock_to_id')} />
+            <Button
+              content="Purge ID requirements"
+              onClick={() => act('purge_acces')} />
           </LabeledList>
         </Section>
       </Window.Content>

@@ -43,9 +43,9 @@
 	/// The refence for the cell
 	var/obj/item/stock_parts/cell/cell
 	/// The amount of power we use per process , calculated!
-	var/calculated_power_use
+	var/calculated_power_use = 0
 	/// The amount of power rig uses by itself
-	var/rig_power_use
+	var/rig_power_use = 25
 	/// The rig suit pieces go here , the list ontop only holds references.
 	var/datum/action/rig_suit/deploy/deploy
 
