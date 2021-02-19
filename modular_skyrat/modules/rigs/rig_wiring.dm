@@ -7,6 +7,7 @@
 		WIRE_POWER1, WIRE_POWER2,
 		WIRE_IDSCAN, WIRE_AI,
 		WIRE_EJECTAI, WIRE_EJECTMODULE,
+		WIRE_RESETOWNER,WIRE_UNLOCK,
 	)
 	..()
 
@@ -26,6 +27,12 @@
 			module.forceMove(RIG.loc)
 			RIG.modules -= module
 			module.remove_ability(RIG)
+		if(WIRE_RESETOWNER)
+			RIG.owner_suit = null
+		if(WIRE_UNLOCK)
+			RIG.locked = 0
+		if(WIRE_IDSCAN)
+			RIG.req_access = null
 
 /datum/wires/rig_suit/on_cut(wire, mend)
 	var/obj/item/rig_suit/RIG = holder
@@ -40,3 +47,6 @@
 				RIG.AIcontrol = FALSE
 			else
 				RIG.AIcontrol = TRUE
+		if(WIRE_UNLOCK)
+			RIG.locked = 1
+

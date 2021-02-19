@@ -53,4 +53,5 @@
 #define WIRE_AGELIMIT "Age Limit"
 #define WIRE_EJECTMODULE "Eject Module"
 #define WIRE_EJECTAI "Eject AI"
+#define WIRE_UNLOCK "Unlock"
 

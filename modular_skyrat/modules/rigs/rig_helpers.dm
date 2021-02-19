@@ -42,7 +42,7 @@
 	if(calculate_power())
 		to_chat(wearer, text = "Succesfully calculated power")
 		powered = 1
-		START_PROCESSING(SSobj,src)
+		START_PROCESSING(SSfastprocess,src)
 	else
 		return FALSE
 	for(var/obj/item/rig_module/item in modules)
@@ -52,4 +52,4 @@
 	for(var/obj/item/rig_module/item in modules)
 		item.remove_ability(src)
 	powered = 0
-	STOP_PROCESSING(SSobj,src)
+	STOP_PROCESSING(SSfastprocess,src)

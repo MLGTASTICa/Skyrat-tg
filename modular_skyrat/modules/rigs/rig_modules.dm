@@ -64,7 +64,6 @@
 	button_icon_state = "deploy_box"
 	var/obj/item/rig_suit/rig
 	var/obj/item/rig_module/module
-	var/dispenser = FALSE
 
 ///Handles module stuff!
 /datum/action/rig_module/Trigger()
@@ -94,9 +93,13 @@
 		/obj/item/reagent_containers/food/drinks/waterbottle,
 		/obj/item/reagent_containers/food/condiment,
 	))
-/datum/action/rig_module/reagent
-	name = "Reagent injector"
+/datum/action/rig_module/reagent/inject
+	name = "Inject reagents"
 	desc = "I swear its not black powder!"
+
+/datum/action/rig_module/reagent/next
+	name = "Switch beaker"
+	desc = "Switch to the next beaker of rage-inducing drugs"
 
 
 
