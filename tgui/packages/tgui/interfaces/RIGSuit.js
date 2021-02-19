@@ -10,21 +10,28 @@ export const RIGSuit = (props, context) => {
     cellcharge,
   } = data;
   return (
-    <Window resizable>
+    <Window
+      width = {500}
+      height = {1000}>
       <Window.Content scrollable>
-        <Section title="Health status">
+        <Section title="R.I.G Parameters">
           <LabeledList>
-            <LabeledList.Item label="Health">
+            <LabeledList.Item label="Current cell">
               {cell}
             </LabeledList.Item>
-            <LabeledList.Item label="Color">
+            <LabeledList.Item label="Current cell charge">
               {cellcharge}
             </LabeledList.Item>
-            <LabeledList.Item label="Button">
+            <LabeledList.Item label="Power up">
               <Button
-                content="Dispatch a 'bruh' action"
-                onClick={() => act('test')} />
+                content="Power the suit"
+                onClick={() => act('power')} />
             </LabeledList.Item>
+             <LabeledList.Item label="Power down">
+              <Button
+                content="Unpower the suit"
+                onClick={() => act('unpower')} />
+             </LabeledList.Item>
           </LabeledList>
         </Section>
       </Window.Content>

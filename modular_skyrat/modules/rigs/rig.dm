@@ -230,8 +230,12 @@ datum/action/rig_suit/undeploy
 	if(..())
 		return
 	switch(action)
-		if("bruh")
-			to_chat(wearer, text = "Bruh!")
+		if("power")
+			to_chat(wearer, text = "Powering suit")
+			power_suit()
+		if("unpower")
+			to_chat(wearer, text= "Powering down suit")
+			unpower_suit()
 
 
 
