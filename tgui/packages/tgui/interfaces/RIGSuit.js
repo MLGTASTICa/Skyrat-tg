@@ -38,3 +38,43 @@ export const RIGSuit = (props, context) => {
     </Window>
   );
 };
+
+export const RIGmodule = (props, context) => {
+  const { act, data } = useBackend(context);
+  const {
+    module_slot,
+  } = props;
+  // Extract `health` and `color` variables from the `data` object.
+  const {
+    module,
+    name,
+    fire_power_use,
+    idle_power_use,
+    module_size,
+    fried,
+    reagents = [],
+  } = data;
+  return (
+    <Window
+      width = {500}
+      height = {1000}>
+      <Window.Content scrollable>
+        <Section title="Module {name}">
+          <LabeledList>
+            <LabeledList.Item label="Idle power use">
+              {idle_power_use}
+            </LabeledList.Item>
+            <LabeledList.Item label="Firing power use">
+              {fire_power_use}
+            </LabeledList.Item>
+            <LabeledList.Item label="Eject module">
+              <Button
+                content="Eject the module"
+                onClick={() => act('Eject {module}')} />
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      </Window.Content>
+    </Window>
+  );
+};
