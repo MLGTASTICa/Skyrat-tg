@@ -22,7 +22,7 @@ export const RIGSuit = (props, context) => {
             </LabeledList.Item>
             <LabeledList.Item label="Button">
               <Button
-                content="Dispatch a 'test' action"
+                content="Dispatch a 'bruh' action"
                 onClick={() => act('test')} />
             </LabeledList.Item>
           </LabeledList>
