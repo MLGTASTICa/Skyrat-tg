@@ -21,18 +21,29 @@
 	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
 	var/fried
-	/// ability to add
-	var/datum/action/rig_module/action = /datum/action/rig_module/
+	/// Eee
+	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
+	/// This is the action storage, adding actions is handled in the item initialize
+	var/list/datum/action/rig_module/action_storage = list()
+
+/// Handle your actions here
+/obj/item/rig_module/Initialize()
+	var/special_counter = actions_to_add.len
+	while(special_counter>0)
+		var/datum/action/rig_module/to_add = actions_to_add[special_counter]
+		var/datum/action/rig_module/handle = new to_add(src)
+		handle.module = src
+		action_storage.Add(handle)
+		special_counter--
 
 /obj/item/rig_module/proc/add_ability(obj/item/rig_suit/target)
-	if(!action)
-		action = new action(src)
-	action.Grant(target.wearer)
-	action.module = src
-	action.rig = target
+	for(var/datum/action/rig_module/module_handle in action_storage)
+		module_handle.Grant(target.wearer)
+		module_handle.rig = target
 
 /obj/item/rig_module/proc/remove_ability(obj/item/rig_suit/target)
-	action.Remove(target.wearer)
+	for(var/datum/action/rig_module/action_remove in action_storage)
+		action_remove.Remove(target.wearer)
 
 
 /obj/item/rig_module/emag_act(mob/user, obj/item/card/emag/E)
@@ -75,14 +86,18 @@
 		return FALSE
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
-
+/*
 /obj/item/rig_module/reagent
 	name = "Combat injector module"
 	desc = "Adds a reagent from a beaker of your choice into your bloodstream!"
 	fire_power_use = 300
+	/// The beaker we will inject from
+	var/obj/item/reagent_containers/selected_beaker = null
+	actions = list(/datum/action/rig_module/reagent/inject, /datum/action/rig_module/reagent/next)
 
 /obj/item/rig_module/reagent/ComponentInitialize()
 	. = ..()
+	AddComponent(/datum/component/storage/concrete)
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_combined_w_class = 5
 	STR.max_items = 5
@@ -97,9 +112,46 @@
 	name = "Inject reagents"
 	desc = "I swear its not black powder!"
 
+/datum/action/rig_module/reagent/inject/Trigger()
+	if(!rig.powered)
+		return FALSE
+	if(world.time < module.cooldown_timer)
+		return FALSE
+	if(!rig.use_power(module.fire_power_use))
+		return FALSE
+	to_chat(rig.wearer, text = "Module activated succesfully")
+	module.cooldown_timer = world.time + module.cooldown
+	var/obj/item/rig_module/reagent/module_handler = module
+	if(!(module_handler.contents))
+		return to_chat(rig.wearer, text = "No beakers inside the module!")
+	if(!(module_handler.selected_beaker))
+		return to_chat(rig.wearer, text ="No beaker selected!")
+	module_handler.selected_beaker.reagents.trans_to(rig.wearer, 20)
+
 /datum/action/rig_module/reagent/next
 	name = "Switch beaker"
 	desc = "Switch to the next beaker of rage-inducing drugs"
 
+/datum/action/rig_module/reagent/next/Trigger()
+	if(!rig.powered)
+		return FALSE
+	if(world.time < module.cooldown_timer)
+		return FALSE
+	if(!rig.use_power(module.fire_power_use))
+		return FALSE
+	to_chat(rig.wearer, text = "Module activated succesfully")
+	module.cooldown_timer = world.time + module.cooldown
+	var/obj/item/rig_module/reagent/module_handler = module
+	if(!(module_handler.contents))
+		return to_chat(rig.wearer, text = "No beakers inside the module!")
+	if(module_handler.selected_beaker)
+		var/counter = module_handler.contents.Find(module_handler.selected_beaker,1,0)
+		if(counter == module_handler.contents.len)
+			counter = 1
+		else
+			counter++
+		module_handler.selected_beaker = module.contents[counter]
+		var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
+		to_chat(rig.wearer, text = "Beaker selected with [reagent_name]") */
 
 
