@@ -2,7 +2,7 @@
 	name = "Rig module"
 	desc = "a motherfucking module"
 	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'
-	icon_state = ""
+	icon_state = "rig_back_default"
 	obj_integrity = 250
 	w_class = WEIGHT_CLASS_SMALL
 	/// Is it active????????
@@ -154,6 +154,7 @@
 		module_handler.selected_beaker = module.contents[counter]
 		var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
 		to_chat(rig.wearer, text = "Beaker selected with [reagent_name]")
-	module_handler.selected_beaker = module.contents[1]
+	else
+		module_handler.selected_beaker = module.contents[1]
 
 
