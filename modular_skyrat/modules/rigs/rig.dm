@@ -238,7 +238,8 @@ datum/action/rig_suit/undeploy
 	return data
 
 /obj/item/rig_suit/ui_act(action, params)
-	if(..())
+	. = ..()
+	if(.)
 		return
 	switch(action)
 		if("power")

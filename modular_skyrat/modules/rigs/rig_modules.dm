@@ -157,4 +157,23 @@
 	else
 		module_handler.selected_beaker = module.contents[1]
 
+/obj/item/rig_module/targeted
+	name = "Targetting system"
+	desc = "The missile knows where it is by knowing where it isn't"
+	actions_to_add = list(/datum/action/rig_module/targeted)
+
+/datum/action/rig_module/targeted
+	name = "Toggle a targeted ability"
+	desc = "Blast the fucking clown off."
+
+/datum/action/rig_module/targeted/Trigger()
+	RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click)
+
+/datum/action/rig_module/targeted/proc/on_middle_click(mob/user, atom/target)
+	SIGNAL_HANDLER
+	return to_chat(user, text = "Target is [target.loc]")
+
+
+
+
 
