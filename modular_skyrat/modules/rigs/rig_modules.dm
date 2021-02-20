@@ -28,6 +28,7 @@
 
 /// Handle your actions here
 /obj/item/rig_module/Initialize()
+	. = ..()
 	var/special_counter = actions_to_add.len
 	while(special_counter>0)
 		var/datum/action/rig_module/to_add = actions_to_add[special_counter]
@@ -86,14 +87,14 @@
 		return FALSE
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
-/*
+
 /obj/item/rig_module/reagent
 	name = "Combat injector module"
 	desc = "Adds a reagent from a beaker of your choice into your bloodstream!"
 	fire_power_use = 300
 	/// The beaker we will inject from
 	var/obj/item/reagent_containers/selected_beaker = null
-	actions = list(/datum/action/rig_module/reagent/inject, /datum/action/rig_module/reagent/next)
+	actions_to_add = list(/datum/action/rig_module/reagent/inject, /datum/action/rig_module/reagent/next)
 
 /obj/item/rig_module/reagent/ComponentInitialize()
 	. = ..()
@@ -152,6 +153,7 @@
 			counter++
 		module_handler.selected_beaker = module.contents[counter]
 		var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
-		to_chat(rig.wearer, text = "Beaker selected with [reagent_name]") */
+		to_chat(rig.wearer, text = "Beaker selected with [reagent_name]")
+	module_handler.selected_beaker = module.contents[1]
 
 
