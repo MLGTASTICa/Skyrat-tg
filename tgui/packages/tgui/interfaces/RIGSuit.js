@@ -67,6 +67,9 @@ export const RIGSuit = (props, context) => {
             <Button
               content="Purge ID requirements"
               onClick={() => act('purge_acces')} />
+             <Button
+              content="Toggle RIG Lock"
+              onClick={() => act('toggle_lock')} />
           </LabeledList>
         </Section>
       </Window.Content>

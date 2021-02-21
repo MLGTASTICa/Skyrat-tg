@@ -5,10 +5,12 @@
 	icon_state = "rig_back_default"
 	obj_integrity = 250
 	w_class = WEIGHT_CLASS_SMALL
+	/// How much does this module weight ? used as a balance factor in how many modules one can have
+	var/weight = 1
 	/// Is it active????????
-	var/active
+	var/active = FALSE
 	/// If the item is emagged
-	var/emagged
+	var/emagged = FALSE
 	/// Cooldown for the use of this moduless ability
 	var/cooldown = 50
 	/// Power usage when we fire it or use it
@@ -20,7 +22,7 @@
 	// Power usage when we fire it , for one time actions
 	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
-	var/fried
+	var/fried = FALSE
 	/// Eee
 	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
 	/// This is the action storage, adding actions is handled in the item initialize
@@ -165,9 +167,16 @@
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
+	var/toggled = FALSE
 
 /datum/action/rig_module/targeted/Trigger()
-	RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click)
+	if(toggled)
+		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
+		name = "Toggle targetting on"
+	else
+		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click)
+		name = "Toggle targetting off"
+
 
 /datum/action/rig_module/targeted/proc/on_middle_click(mob/user, atom/target)
 	SIGNAL_HANDLER

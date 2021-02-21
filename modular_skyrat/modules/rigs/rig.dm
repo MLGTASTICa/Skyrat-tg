@@ -125,6 +125,14 @@ datum/action/rig_suit/undeploy
 
 ///  Deploys the rig , making the backpack undroppable and forcefully equipping the gear. Make sure to return TRUE or FALSE because we use this to  handle some button changes
 /obj/item/rig_suit/proc/deploy()
+	if(owner_suit && wearer != owner_suit)
+		to_chat(wearer, text = "DNA Sequence not matching with registered RIG Owner. Aborting")
+		return FALSE
+	if(req_access)
+		var/obj/item/id = wearer.get_idcard()
+		if(req_access != id)
+			to_chat(wearer, text = "ID Acces codes are missing . Acces denied")
+			return FALSE
 	if(!cell)
 		return FALSE //
 	ADD_TRAIT(src, TRAIT_NODROP, src)
@@ -191,12 +199,12 @@ datum/action/rig_suit/undeploy
 		if(!cell)
 			cell = I
 			I.moveToNullspace()
+			to_chat(user, text = "You insert the [I] into the [src]")
 		else
 			to_chat(user,text = "There is already a battery in the [src]")
 		return TRUE
 	if(istype(I,/obj/item/rig_module))
-		modules.Add(I)
-		I.moveToNullspace()
+		handle_module_insertion(I, user)
 		return TRUE
 	..()
 
@@ -250,9 +258,10 @@ datum/action/rig_suit/undeploy
 			unpower_suit()
 		if("eject_module")
 			if(modules)
-				var/obj/item/fugitive = pick(modules)
+				var/obj/item/rig_module/fugitive = pick(modules)
 				fugitive.forceMove(wearer.loc)
 				modules -= fugitive
+				fugitive.remove_ability(src)
 		if("become_owner")
 			owner_suit = wearer
 		if("purge_owner")
@@ -262,3 +271,10 @@ datum/action/rig_suit/undeploy
 			req_access = id.GetAccess()
 		if("purge_acces")
 			req_access = null
+		if("toggle_lock")
+			if(locked)
+				to_chat(wearer, text = "RIG Unlocked")
+			else
+				to_chat(wearer, text = "You feel the RIG clamp itself onto your chest!")
+			locked = !locked
+

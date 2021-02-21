@@ -16,7 +16,7 @@
 		if(ITEM_SLOT_FEET)
 			update_inv_shoes()
 
-/obj/item/rig_suit/proc/use_power(var/amount)
+/obj/item/rig_suit/proc/use_power(amount)
 	if(!cell)
 		if(powered)
 			unpower_suit()
@@ -53,3 +53,13 @@
 		item.remove_ability(src)
 	powered = 0
 	STOP_PROCESSING(SSfastprocess,src)
+
+/obj/item/rig_suit/proc/handle_module_insertion(obj/item/rig_module/module, mob/inserter)
+	if(modules.len >= module_limit)
+		return to_chat(inserter , text = "There are no empty module sockets to insert this module onto")
+	if(module.weight > (module_weight_limit - module_weight_current))
+		return to_chat(inserter , text = "This module is far too heavy to attack to the rig!")
+	to_chat(inserter , text = "You insert the [module] into the [src]")
+	visible_message("[inserter] inserts the [module] into [src]")
+	module.moveToNullspace()
+	modules.Add(module)
