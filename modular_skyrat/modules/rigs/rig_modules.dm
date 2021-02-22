@@ -172,10 +172,12 @@
 	desc = "The missile knows where it is by knowing where it isn't"
 	actions_to_add = list(/datum/action/rig_module/targeted)
 
+
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
 	var/toggled = FALSE
+
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
@@ -185,6 +187,7 @@
 		toggled = FALSE
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
+		datum_flags &= ~DF_SIGNAL_ENABLED // Prevents runtimes from shitty signal calls
 		name = "Toggle targetting off"
 		toggled = TRUE
 
