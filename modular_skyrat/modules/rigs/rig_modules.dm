@@ -88,7 +88,7 @@
 	custom_trigger()
 
 /datum/action/rig_module/proc/custom_trigger()
-	if(rig.suit_pieces[linked_to].deployed == FALSE)
+	if(rig.suit_pieces[linked_to]?.deployed == FALSE)
 		to_chat(rig.wearer, text = "The module tries to do its act , but the suit pieces its linked to is not deployed!")
 		return FALSE
 	if(!rig.powered)
@@ -183,15 +183,14 @@
 		name = "Toggle targetting on"
 		toggled = FALSE
 	else
-		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click)
+		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
 		toggled = TRUE
 
 
-/datum/action/rig_module/targeted/proc/on_middle_click(mob/user, atom/target)
+/datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
-	return to_chat(user, text = "Target is [target.loc]")
-
+	rig.wearer.swap_hand()
 /obj/item/rig_module/targeted/laser
 	name = "All-star C4 Laser module"
 	desc = "A very compact module installed with a high-performance compact laser"
@@ -201,8 +200,8 @@
 	name = "Toggle All-star C4 carbine module"
 	desc = "Laser go brr"
 
-/datum/action/rig_module/targeted/laser/on_middle_click(mob/user, atom/target)
-	SIGNAL_HANDLER
+/datum/action/rig_module/targeted/laser/on_middle_click_rig(mob/user, atom/target)
+	. = ..()
 	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
@@ -211,10 +210,12 @@
 	P.xo = target.x - rig.wearer.loc.x
 	P.original = target
 	P.preparePixelProjectile(target, rig.wearer)
-	P.fire()
-	rig.wearer.swap_hand()
+	P.fire_with_async(P)
 	return P
 
+/obj/projectile/proc/fire_with_async(obj/projectile/projectile_controlled, angle, atom/direct_target)
+	INVOKE_ASYNC
+	projectile_controlled.fire(angle, direct_target)
 
 
 
