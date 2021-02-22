@@ -15,6 +15,7 @@
 			update_inv_head()
 		if(ITEM_SLOT_FEET)
 			update_inv_shoes()
+	clothing?.deployed = TRUE
 
 /obj/item/rig_suit/proc/use_power(amount)
 	if(!cell)

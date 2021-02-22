@@ -5,6 +5,8 @@
 	icon_state = "rig_back_default"
 	obj_integrity = 250
 	w_class = WEIGHT_CLASS_SMALL
+	/// This module requires a part of the suit to be deployed, 1-head 2-suit 3-gloves 4-boots
+	var/linked_to = 2
 	/// How much does this module weight ? used as a balance factor in how many modules one can have
 	var/weight = 1
 	/// Is it active????????
@@ -36,6 +38,7 @@
 		var/datum/action/rig_module/to_add = actions_to_add[special_counter]
 		var/datum/action/rig_module/handle = new to_add(src)
 		handle.module = src
+		handle.linked_to = linked_to
 		action_storage.Add(handle)
 		special_counter--
 
@@ -78,17 +81,28 @@
 	button_icon_state = "deploy_box"
 	var/obj/item/rig_suit/rig
 	var/obj/item/rig_module/module
+	var/linked_to
 
-///Handles module stuff!
+/// So we can freely parent call this proc for all the checks AND not have to deal with the trigger runtimes afterwards from the other parents
 /datum/action/rig_module/Trigger()
+	custom_trigger()
+
+/datum/action/rig_module/proc/custom_trigger()
+	if(rig.suit_pieces[linked_to].deployed == FALSE)
+		to_chat(rig.wearer, text = "The module tries to do its act , but the suit pieces its linked to is not deployed!")
+		return FALSE
 	if(!rig.powered)
 		return FALSE
 	if(world.time < module.cooldown_timer)
 		return FALSE
 	if(!rig.use_power(module.fire_power_use))
 		return FALSE
+	if(module.fried)
+		to_chat(rig.wearer, text = "You try to active the module , but it stops with a sharp electric buzz!")
+		return FALSE
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
+
 
 /obj/item/rig_module/reagent
 	name = "Combat injector module"
@@ -135,15 +149,8 @@
 	name = "Switch beaker"
 	desc = "Switch to the next beaker of rage-inducing drugs"
 
-/datum/action/rig_module/reagent/next/Trigger()
-	if(!rig.powered)
-		return FALSE
-	if(world.time < module.cooldown_timer)
-		return FALSE
-	if(!rig.use_power(module.fire_power_use))
-		return FALSE
-	to_chat(rig.wearer, text = "Module activated succesfully")
-	module.cooldown_timer = world.time + module.cooldown
+/datum/action/rig_module/reagent/next/custom_trigger()
+	. = ..()
 	var/obj/item/rig_module/reagent/module_handler = module
 	if(!(module_handler.contents))
 		return to_chat(rig.wearer, text = "No beakers inside the module!")
@@ -169,7 +176,8 @@
 	desc = "Blast the fucking clown off."
 	var/toggled = FALSE
 
-/datum/action/rig_module/targeted/Trigger()
+/datum/action/rig_module/targeted/custom_trigger()
+	. = ..()
 	if(toggled)
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
