@@ -181,14 +181,39 @@
 	if(toggled)
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
+		toggled = FALSE
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click)
 		name = "Toggle targetting off"
+		toggled = TRUE
 
 
 /datum/action/rig_module/targeted/proc/on_middle_click(mob/user, atom/target)
 	SIGNAL_HANDLER
 	return to_chat(user, text = "Target is [target.loc]")
+
+/obj/item/rig_module/targeted/laser
+	name = "All-star C4 Laser module"
+	desc = "A very compact module installed with a high-performance compact laser"
+	actions_to_add = list(/datum/action/rig_module/targeted/laser)
+
+/datum/action/rig_module/targeted/laser
+	name = "Toggle All-star C4 carbine module"
+	desc = "Laser go brr"
+
+/datum/action/rig_module/targeted/laser/on_middle_click(mob/user, atom/target)
+	SIGNAL_HANDLER
+	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
+	P.starting = rig.wearer.loc
+	P.firer = rig.wearer
+	P.fired_from = rig
+	P.yo = target.y - rig.wearer.loc.y
+	P.xo = target.x - rig.wearer.loc.x
+	P.original = target
+	P.preparePixelProjectile(target, rig.wearer)
+	P.fire()
+	rig.wearer.swap_hand()
+	return P
 
 
 
