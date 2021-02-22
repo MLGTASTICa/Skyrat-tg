@@ -88,7 +88,8 @@
 	custom_trigger()
 
 /datum/action/rig_module/proc/custom_trigger()
-	if(rig.suit_pieces[linked_to]?.deployed == FALSE)
+	var/obj/item/clothing/rig_suit_holder/holder = rig.suit_pieces[linked_to]
+	if(holder.deployed == FALSE)
 		to_chat(rig.wearer, text = "The module tries to do its act , but the suit pieces its linked to is not deployed!")
 		return FALSE
 	if(!rig.powered)
@@ -210,12 +211,8 @@
 	P.xo = target.x - rig.wearer.loc.x
 	P.original = target
 	P.preparePixelProjectile(target, rig.wearer)
-	P.fire_with_async(P)
+	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 	return P
-
-/obj/projectile/proc/fire_with_async(obj/projectile/projectile_controlled, angle, atom/direct_target)
-	INVOKE_ASYNC
-	projectile_controlled.fire(angle, direct_target)
 
 
 

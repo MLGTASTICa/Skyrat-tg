@@ -101,7 +101,7 @@
 	wearer = rig.wearer
 /datum/action/rig_suit/deploy
 	name = "Deploy RIG"
-datum/action/rig_suit/undeploy
+/datum/action/rig_suit/undeploy
 	name = "Undeploy RIG"
 
 /// Same as below desc
@@ -156,21 +156,13 @@ datum/action/rig_suit/undeploy
 	var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
 	var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
 	if(istype(cloth1, /obj/item/clothing/head/helmet/rig_suit))
-		wearer.dropItemToGround(cloth1, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth1?.deployed = FALSE // This is guaranteed to have it , but to avoid redefining the object we just use a prototype acces.
-		cloth1.moveToNullspace()
+		handle_clothing_drop(cloth1, ITEM_SLOT_HEAD)
 	if(istype(cloth2, /obj/item/clothing/suit/armor/rig_suit))
-		wearer.dropItemToGround(cloth2, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth2?.deployed = FALSE
-		cloth2.moveToNullspace()
+		handle_clothing_drop(cloth2, ITEM_SLOT_OCLOTHING)
 	if(istype(cloth3, /obj/item/clothing/gloves/rig_suit))
-		wearer.dropItemToGround(cloth3, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth3?.deployed = FALSE
-		cloth3.moveToNullspace()
+		handle_clothing_drop(cloth3, ITEM_SLOT_GLOVES)
 	if(istype(cloth4, /obj/item/clothing/shoes/rig_suit))
-		wearer.dropItemToGround(cloth4, force = TRUE, silent = FALSE, invdrop = TRUE)
-		cloth4?.deployed = FALSE
-		cloth4.moveToNullspace()
+		handle_clothing_drop(cloth4, ITEM_SLOT_FEET)
 	for(var/obj/item/clothing/cloth in contents)
 		wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
 
