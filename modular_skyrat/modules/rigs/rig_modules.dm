@@ -29,6 +29,7 @@
 	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
 	/// This is the action storage, adding actions is handled in the item initialize
 	var/list/datum/action/rig_module/action_storage = list()
+	var/obj/item/rig_suit/rig = null
 
 /// Handle your actions here
 /obj/item/rig_module/Initialize()
@@ -46,11 +47,11 @@
 	for(var/datum/action/rig_module/module_handle in action_storage)
 		module_handle.Grant(target.wearer)
 		module_handle.rig = target
+		rig = target
 
 /obj/item/rig_module/proc/remove_ability(obj/item/rig_suit/target)
 	for(var/datum/action/rig_module/action_remove in action_storage)
 		action_remove.Remove(target.wearer)
-
 
 /obj/item/rig_module/emag_act(mob/user, obj/item/card/emag/E)
 	. = ..()
@@ -205,6 +206,20 @@
 
 /datum/action/rig_module/targeted/laser/on_middle_click_rig(mob/user, atom/target)
 	. = ..()
+	INVOKE_ASYNC(module, /obj/item/rig_module.proc/handle_laser_fire, list(user, target))
+	/*var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
+	P.starting = rig.wearer.loc
+	P.firer = rig.wearer
+	P.fired_from = rig
+	P.yo = target.y - rig.wearer.loc.y
+	P.xo = target.x - rig.wearer.loc.x
+	P.original = target
+	P.preparePixelProjectile(target, rig.wearer)
+	P.fire()
+	//INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+	return P*/
+
+/obj/item/rig_module/proc/handle_laser_fire(mob/user, atom/target)
 	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
@@ -213,9 +228,6 @@
 	P.xo = target.x - rig.wearer.loc.x
 	P.original = target
 	P.preparePixelProjectile(target, rig.wearer)
-	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+	P.fire()
+	//INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 	return P
-
-
-
-
