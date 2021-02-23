@@ -187,7 +187,6 @@
 		toggled = FALSE
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
-		datum_flags &= ~DF_SIGNAL_ENABLED // Prevents runtimes from shitty signal calls
 		name = "Toggle targetting off"
 		toggled = TRUE
 
