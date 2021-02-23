@@ -211,3 +211,23 @@
 	desc = "Laser go brr"
 	projtype = /obj/projectile/beam/laser/heavylaser
 
+/obj/item/rig_module/targeted/laser_weak
+	name = "All-star C5 Laser module"
+	desc = "A very compact module installed with a a low performance laser"
+	actions_to_add = list(/datum/action/rig_module/targeted/laser_weak)
+
+/datum/action/rig_module/targeted/laser_weak
+	name = "Toggle All-star C5 carbine module"
+	desc = "Laser go brr"
+	projtype = /obj/projectile/beam/laser
+	/obj/projectile/beam/disabler
+
+/obj/item/rig_module/targeted/disabler
+	name = "Armadyne KER-6 Disabler module"
+	desc = "A very compact module installed with a peformant disabler!"
+	actions_to_add = list(/datum/action/rig_module/targeted/disabler)
+
+/datum/action/rig_module/targeted/disabler
+	name = "Toggle KER-6 Disabler module"
+	desc = "Laser go brr"
+	projtype = /obj/projectile/beam/disabler
