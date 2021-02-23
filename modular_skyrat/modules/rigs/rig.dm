@@ -27,7 +27,7 @@
 	/// The sum of all module weights
 	var/module_weight_current = 0
 	/// The required acces
-	req_access = ACCESS_MAINT_TUNNELS
+	req_access = 0
 	/// The owner who may deploy this rigsuit if chosen
 	var/mob/living/carbon/human/owner_suit = null
 	/// Whoever is currently wearing the rigsuit

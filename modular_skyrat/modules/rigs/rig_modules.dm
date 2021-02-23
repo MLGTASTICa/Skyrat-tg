@@ -199,15 +199,21 @@
 	name = "All-star C4 Laser module"
 	desc = "A very compact module installed with a high-performance compact laser"
 	actions_to_add = list(/datum/action/rig_module/targeted/laser)
+	var/obj/projectile/beam/laser/heavylaser/laser_to_create = /obj/projectile/beam/laser/heavylaser
+	var/obj/projectile/storage = null
 
+
+/obj/item/rig_module/targeted/laser/proc/create_projectile()
+	storage = new laser_to_create(get_turf(rig.wearer))
 /datum/action/rig_module/targeted/laser
 	name = "Toggle All-star C4 carbine module"
 	desc = "Laser go brr"
 
 /datum/action/rig_module/targeted/laser/on_middle_click_rig(mob/user, atom/target)
 	. = ..()
-	INVOKE_ASYNC(module, /obj/item/rig_module.proc/handle_laser_fire, list(user, target))
-	/*var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
+	INVOKE_ASYNC(module, /obj/item/rig_module/targeted/laser.proc/create_projectile)
+	var/obj/item/rig_module/targeted/laser/handle = module
+	var/obj/projectile/P = handle.storage
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
 	P.fired_from = rig
@@ -216,18 +222,21 @@
 	P.original = target
 	P.preparePixelProjectile(target, rig.wearer)
 	P.fire()
-	//INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-	return P*/
+	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+	return P
 
-/obj/item/rig_module/proc/handle_laser_fire(mob/user, atom/target)
+/*
+/obj/item/rig_module/proc/handle_laser_fire(atom/targeted_atom)
 	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
+	var/current_loc = rig.wearer.loc
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
 	P.fired_from = rig
-	P.yo = target.y - rig.wearer.loc.y
-	P.xo = target.x - rig.wearer.loc.x
-	P.original = target
-	P.preparePixelProjectile(target, rig.wearer)
+	P.yo = targeted_atom.y - rig.wearer.loc.y
+	P.xo = targeted_atom.x - rig.wearer.loc.x
+	P.original = targeted_atom
+	P.preparePixelProjectile(targeted_atom, current_loc)
 	P.fire()
 	//INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 	return P
+*/
