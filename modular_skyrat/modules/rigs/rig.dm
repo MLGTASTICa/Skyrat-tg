@@ -47,7 +47,8 @@
 	/// The amount of power rig uses by itself
 	var/rig_power_use = 25
 	/// The rig suit pieces go here , the list ontop only holds references.
-	var/datum/action/rig_suit/deploy/deploy
+	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy)
+	var/list/datum/action/rig_suit/action_storage_rig = list()
 
 /// We add the individual suit components and the wires datum.
 /obj/item/rig_suit/Initialize()
@@ -57,6 +58,12 @@
 	suit_pieces.Add(new vest) // 2
 	suit_pieces.Add(new gloves) // 3
 	suit_pieces.Add(new boots) // 4
+	var/special_counter = actions_to_add_rig.len
+	while(special_counter>0)
+		var/datum/action/rig_suit/to_add = actions_to_add_rig[special_counter]
+		var/datum/action/rig_suit/handle = new to_add(src)
+		action_storage_rig.Add(handle)
+		special_counter--
 
 //***
 ///obj/item/rig_suit/New()
@@ -74,20 +81,12 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		if(!deploy)
-			deploy = new /datum/action/rig_suit/deploy(src)
-		deploy.Grant(wearer)
+		action_storage_rig[1].Grant(wearer)
 
 /obj/item/rig_suit/dropped(mob/user, silent)
 	. = ..()
 	wearer = null
-	if(deploy)
-		deploy.Remove(user)
-
-/datum/action/item_action/rig_suit
-	name = "Test 1 2 3 4 5"
-	check_flags = AB_CHECK_CONSCIOUS
-	button_icon_state = null
+	action_storage_rig[1].Remove(user)
 
 /datum/action/rig_suit
 	name = "Deploy RIG"
@@ -99,72 +98,56 @@
 	. = ..()
 	rig = target
 	wearer = rig.wearer
-/datum/action/rig_suit/deploy
+/datum/action/rig_suit/deploy_undeploy
 	name = "Deploy RIG"
-/datum/action/rig_suit/undeploy
-	name = "Undeploy RIG"
 
 /// Same as below desc
-/datum/action/rig_suit/deploy/Trigger()
-	if(rig.deploy())
-		Remove(wearer)
-		var/datum/action/rig_suit/undeploy/additive = null
-		if(rig.actions)
-			additive = rig.actions.Find(/datum/action/rig_suit/undeploy,1,0)
-		if(!additive)
-			additive = new /datum/action/rig_suit/undeploy(rig)
-		additive.Grant(wearer)
+/datum/action/rig_suit/deploy_undeploy/Trigger()
+	rig.deploy_undeploy()
 
 /// The datum for undeploying , we remove it from displaying on use and replace it with the deploy one , or make a new deploy one if it magically disspears
-/datum/action/rig_suit/undeploy/Trigger()
-	rig.undeploy()
-	Remove(wearer)
-	if(!rig.deploy)
-		rig.deploy= new /datum/action/rig_suit/deploy(rig)
-	rig.deploy.Grant(wearer)
 
 ///  Deploys the rig , making the backpack undroppable and forcefully equipping the gear. Make sure to return TRUE or FALSE because we use this to  handle some button changes
-/obj/item/rig_suit/proc/deploy()
-	if(owner_suit && wearer != owner_suit)
-		to_chat(wearer, text = "DNA Sequence not matching with registered RIG Owner. Aborting")
-		return FALSE
-	if(req_access)
-		var/obj/item/id = wearer.get_idcard()
-		if(req_access != id)
-			to_chat(wearer, text = "ID Acces codes are missing . Acces denied")
+/obj/item/rig_suit/proc/deploy_undeploy()
+	if(!deployed)
+		if(owner_suit && wearer != owner_suit)
+			to_chat(wearer, text = "DNA Sequence not matching with registered RIG Owner. Aborting")
 			return FALSE
-	if(!cell)
-		return FALSE //
-	ADD_TRAIT(src, TRAIT_NODROP, src)
-	to_chat(wearer,text = "Deploying rig")
-	wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
-	wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
-	wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
-	wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
-	deployed = TRUE
-	power_suit()
-	return TRUE
-
-/// Unpowers the suit , sets all the vars , removes the no drop trait and then unequips all the  rig clothes and puts all the stored clothes in contents on the user.
-/obj/item/rig_suit/proc/undeploy()
-	deployed = FALSE
-	powered = FALSE
-	REMOVE_TRAIT(src, TRAIT_NODROP, src)
-	unpower_suit()
-	var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
-	var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
-	var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
-	var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
-	if(istype(cloth1, /obj/item/clothing/head/helmet/rig_suit))
-		handle_clothing_drop(cloth1, ITEM_SLOT_HEAD)
-	if(istype(cloth2, /obj/item/clothing/suit/armor/rig_suit))
-		handle_clothing_drop(cloth2, ITEM_SLOT_OCLOTHING)
-	if(istype(cloth3, /obj/item/clothing/gloves/rig_suit))
-		handle_clothing_drop(cloth3, ITEM_SLOT_GLOVES)
-	if(istype(cloth4, /obj/item/clothing/shoes/rig_suit))
-		handle_clothing_drop(cloth4, ITEM_SLOT_FEET)
-	for(var/obj/item/clothing/cloth in contents)
-		wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
+		if(req_access)
+			var/obj/item/id = wearer.get_idcard()
+			if(req_access != id)
+				to_chat(wearer, text = "ID Acces codes are missing . Acces denied")
+				return FALSE
+		if(!cell)
+			return FALSE
+		ADD_TRAIT(src, TRAIT_NODROP, src)
+		to_chat(wearer,text = "Deploying rig")
+		wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
+		wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
+		wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
+		wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
+		deployed = TRUE
+		power_suit()
+		return TRUE
+	else
+		deployed = FALSE
+		powered = FALSE
+		REMOVE_TRAIT(src, TRAIT_NODROP, src)
+		unpower_suit()
+		var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
+		var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
+		var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
+		var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
+		if(istype(cloth1, /obj/item/clothing/head/helmet/rig_suit))
+			handle_clothing_drop(cloth1, ITEM_SLOT_HEAD)
+		if(istype(cloth2, /obj/item/clothing/suit/armor/rig_suit))
+			handle_clothing_drop(cloth2, ITEM_SLOT_OCLOTHING)
+		if(istype(cloth3, /obj/item/clothing/gloves/rig_suit))
+			handle_clothing_drop(cloth3, ITEM_SLOT_GLOVES)
+		if(istype(cloth4, /obj/item/clothing/shoes/rig_suit))
+			handle_clothing_drop(cloth4, ITEM_SLOT_FEET)
+		for(var/obj/item/clothing/cloth in contents)
+			wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
 
 /// Screwdirver act
 /obj/item/rig_suit/screwdriver_act(mob/living/user, obj/item/I)

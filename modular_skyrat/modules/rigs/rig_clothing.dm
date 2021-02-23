@@ -1,6 +1,3 @@
-// This things only purpose is to allow me to easily acces the deployed var
-/obj/item/clothing/rig_suit_holder
-	var/deployed = FALSE
 
 /obj/item/clothing/gloves/rig_suit
 	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'

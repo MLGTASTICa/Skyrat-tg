@@ -70,4 +70,8 @@
 	clothing.deployed = FALSE // This is guaranteed to have it , but to avoid redefining the object we just use a prototype acces.
 	clothing.moveToNullspace()
 
+// This things only purpose is to allow me to easily acces the deployed var
+/obj/item/clothing/rig_suit_holder
+	var/deployed = FALSE
+
 

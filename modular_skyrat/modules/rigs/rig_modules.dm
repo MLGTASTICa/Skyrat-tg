@@ -131,19 +131,12 @@
 	name = "Inject reagents"
 	desc = "I swear its not black powder!"
 
-/datum/action/rig_module/reagent/inject/Trigger()
-	if(!rig.powered)
-		return FALSE
-	if(world.time < module.cooldown_timer)
-		return FALSE
-	if(!rig.use_power(module.fire_power_use))
-		return FALSE
-	to_chat(rig.wearer, text = "Module activated succesfully")
-	module.cooldown_timer = world.time + module.cooldown
+/datum/action/rig_module/reagent/inject/custom_trigger()
+	. = ..()
 	var/obj/item/rig_module/reagent/module_handler = module
-	if(!(module_handler.contents))
+	if(!module_handler.contents)
 		return to_chat(rig.wearer, text = "No beakers inside the module!")
-	if(!(module_handler.selected_beaker))
+	if(!module_handler.selected_beaker)
 		return to_chat(rig.wearer, text ="No beaker selected!")
 	module_handler.selected_beaker.reagents.trans_to(rig.wearer, 20)
 
@@ -154,19 +147,18 @@
 /datum/action/rig_module/reagent/next/custom_trigger()
 	. = ..()
 	var/obj/item/rig_module/reagent/module_handler = module
-	if(!(module_handler.contents))
+	if(!module_handler.contents)
 		return to_chat(rig.wearer, text = "No beakers inside the module!")
-	if(module_handler.selected_beaker)
-		var/counter = module_handler.contents.Find(module_handler.selected_beaker,1,0)
-		if(counter == module_handler.contents.len)
-			counter = 1
-		else
-			counter++
-		module_handler.selected_beaker = module.contents[counter]
-		var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
-		to_chat(rig.wearer, text = "Beaker selected with [reagent_name]")
-	else
+	if(!module_handler.selected_beaker)
 		module_handler.selected_beaker = module.contents[1]
+	var/counter = module_handler.contents.Find(module_handler.selected_beaker,1,0)
+	if(counter == module_handler.contents.len)
+		counter = 1
+	else
+		counter++
+	module_handler.selected_beaker = module.contents[counter]
+	var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
+	to_chat(rig.wearer, text = "Beaker selected with [reagent_name]")
 
 /obj/item/rig_module/targeted
 	name = "Targetting system"
@@ -178,6 +170,8 @@
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
 	var/toggled = FALSE
+	/// What kind of projectile do we make ? its typepath.
+	var/projtype = null
 
 
 /datum/action/rig_module/targeted/custom_trigger()
@@ -195,39 +189,25 @@
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
 	rig.wearer.swap_hand()
+	if(projtype)
+		var/obj/projectile/P = new projtype(rig.wearer)
+		P.starting = rig.wearer.loc
+		P.firer = rig.wearer
+		P.fired_from = rig
+		P.yo = target.y - rig.wearer.loc.y
+		P.xo = target.x - rig.wearer.loc.x
+		P.original = target
+		P.preparePixelProjectile(target, rig.wearer)
+		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+		return NONE
+
 /obj/item/rig_module/targeted/laser
 	name = "All-star C4 Laser module"
 	desc = "A very compact module installed with a high-performance compact laser"
 	actions_to_add = list(/datum/action/rig_module/targeted/laser)
+
 /datum/action/rig_module/targeted/laser
 	name = "Toggle All-star C4 carbine module"
 	desc = "Laser go brr"
+	projtype = /obj/projectile/beam/laser/heavylaser
 
-/datum/action/rig_module/targeted/laser/on_middle_click_rig(mob/user, atom/target)
-	. = ..()
-	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
-	P.starting = rig.wearer.loc
-	P.firer = rig.wearer
-	P.fired_from = rig
-	P.yo = target.y - rig.wearer.loc.y
-	P.xo = target.x - rig.wearer.loc.x
-	P.original = target
-	P.preparePixelProjectile(target, rig.wearer)
-	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-	return NONE
-
-/*
-/obj/item/rig_module/proc/handle_laser_fire(atom/targeted_atom)
-	var/obj/projectile/P = new /obj/projectile/beam/laser/heavylaser(get_turf(rig.wearer))
-	var/current_loc = rig.wearer.loc
-	P.starting = rig.wearer.loc
-	P.firer = rig.wearer
-	P.fired_from = rig
-	P.yo = targeted_atom.y - rig.wearer.loc.y
-	P.xo = targeted_atom.x - rig.wearer.loc.x
-	P.original = targeted_atom
-	P.preparePixelProjectile(targeted_atom, current_loc)
-	P.fire()
-	//INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-	return P
-*/
