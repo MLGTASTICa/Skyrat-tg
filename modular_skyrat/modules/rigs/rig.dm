@@ -221,6 +221,13 @@
 	data["maximum_modules_weight"] = module_weight_limit
 	data["module_weight"] = module_weight_current
 	data["ai"] = AI
+	var/special_counter = 0
+	for(var/obj/item/rig_module/module in modules)
+		var/list/handle = list()
+		special_counter++
+		handle["id"] = special_counter
+		handle["name"] = module.name
+		data["modules"] += list(handle)
 
 	return data
 
@@ -256,4 +263,13 @@
 			else
 				to_chat(wearer, text = "You feel the RIG clamp itself onto your chest!")
 			locked = !locked
+		if("eject_specific_module")
+			var/id = params["identifier"]
+			to_chat(wearer, text = "Identifier is [id]")
+			var/obj/item/rig_module/module = modules[id]
+			to_chat(wearer, text = "Module is [module]")
+			modules -= modules[id]
+			module.forceMove(wearer.loc)
+		if("configure_specific_module")
+			to_chat(wearer , text = "Bruh")
 

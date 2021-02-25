@@ -14,11 +14,12 @@ export const RIGSuit = (props, context) => {
     maximum_modules_weight,
     module_weight,
     ai,
+    modules = data.module_data || [],
   } = data;
   return (
     <Window
-      width = {500}
-      height = {500}>
+      width = {1000}
+      height = {1000}>
       <Window.Content scrollable>
         <Section title="RIG Statistics">
           <LabeledList>
@@ -67,9 +68,36 @@ export const RIGSuit = (props, context) => {
             <Button
               content="Purge ID requirements"
               onClick={() => act('purge_acces')} />
-             <Button
+            <Button
               content="Toggle RIG Lock"
               onClick={() => act('toggle_lock')} />
+          <Window>
+            <Window.Content>
+                <Section>
+                  {modules.map(module => (
+                    <Section
+                      key={module.name}
+                      title={module.name}
+                      level={2}
+                      buttons={(
+                       <>
+                          <Button
+                            content="Eject module"
+                            onClick={() => act('eject_specific_module', {
+                            identifier: module.id,
+                          })} />
+                          <Button
+                            content="Configure"
+                            onClick={() => act('configure_specific_module', {
+                            identifier: module.name,
+                        })} />
+                        </>
+                     )}>
+                    </Section>
+                  ))}
+                </Section>
+            </Window.Content>
+          </Window>
           </LabeledList>
         </Section>
       </Window.Content>

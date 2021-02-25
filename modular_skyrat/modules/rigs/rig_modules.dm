@@ -200,7 +200,9 @@
 		P.preparePixelProjectile(target, rig.wearer)
 		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 		return NONE
-
+/*
+Laser Modules!
+*/
 /obj/item/rig_module/targeted/laser
 	name = "All-star C4 Laser module"
 	desc = "A very compact module installed with a high-performance compact laser"
@@ -231,3 +233,16 @@
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
 	projtype = /obj/projectile/beam/disabler
+/*
+Ballistic modules
+*/
+
+
+
+
+
+
+/*
+Reagent modules
+*/
+
