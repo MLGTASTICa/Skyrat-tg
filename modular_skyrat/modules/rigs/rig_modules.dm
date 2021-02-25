@@ -172,6 +172,7 @@
 	var/toggled = FALSE
 	/// What kind of projectile do we make ? its typepath.
 	var/projtype = null
+	var/list/melle = list("sound" = '', "damage" = 45, "damage_type" = BURN, "range" = 1)
 
 
 /datum/action/rig_module/targeted/custom_trigger()
@@ -200,6 +201,13 @@
 		P.preparePixelProjectile(target, rig.wearer)
 		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 		return NONE
+	if(melle)
+		var/range = melle["range"]
+		if(get_dist(rig.wearer, target)<range)
+			var/damage = melle["damage"]
+			var/damage_type = melle["damage_type"]
+
+
 /*
 Laser Modules!
 */
@@ -246,3 +254,6 @@ Ballistic modules
 Reagent modules
 */
 
+/*
+Melle modules
+*/

@@ -18,8 +18,8 @@ export const RIGSuit = (props, context) => {
   } = data;
   return (
     <Window
-      width = {1000}
-      height = {1000}>
+      width = {300}
+      height = {600}>
       <Window.Content scrollable>
         <Section title="RIG Statistics">
           <LabeledList>
@@ -71,33 +71,24 @@ export const RIGSuit = (props, context) => {
             <Button
               content="Toggle RIG Lock"
               onClick={() => act('toggle_lock')} />
-          <Window>
-            <Window.Content>
-                <Section>
-                  {modules.map(module => (
-                    <Section
-                      key={module.name}
-                      title={module.name}
-                      level={2}
-                      buttons={(
-                       <>
-                          <Button
-                            content="Eject module"
-                            onClick={() => act('eject_specific_module', {
-                            identifier: module.id,
-                          })} />
-                          <Button
-                            content="Configure"
-                            onClick={() => act('configure_specific_module', {
-                            identifier: module.name,
-                        })} />
-                        </>
-                     )}>
-                    </Section>
-                  ))}
-                </Section>
-            </Window.Content>
-          </Window>
+            {modules.map(module => (
+              <LabeledList.Item label={module.name}
+                buttons={(
+                  <>
+                    <Button
+                      content="Eject module"
+                      onClick={() => act('eject_specific_module', {
+                      identifier: module.id,
+                    })} />
+                    <Button
+                      content="Configure"
+                      onClick={() => act('configure_specific_module', {
+                      identifier: module.name,
+                    })} />
+                  </>
+                )}>
+              </LabeledList.Item>
+            ))}
           </LabeledList>
         </Section>
       </Window.Content>
