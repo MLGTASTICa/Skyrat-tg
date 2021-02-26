@@ -171,9 +171,9 @@
 	desc = "Blast the fucking clown off."
 	var/toggled = FALSE
 	/// What kind of projectile do we make ? its typepath.
-	var/projtype = null
-	var/list/melle = list("sound" = '', "damage" = 45, "damage_type" = BURN, "range" = 1)
-
+	var/selected_projtype = null
+	var/list/projectiles = list(/obj/projectile/beam/laser, /obj/projectile/beam/disabler)
+	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser)
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
@@ -190,8 +190,8 @@
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
 	rig.wearer.swap_hand()
-	if(projtype)
-		var/obj/projectile/P = new projtype(rig.wearer)
+	if(selected_projtype)
+		var/obj/projectile/P = new selected_projtype(rig.wearer)
 		P.starting = rig.wearer.loc
 		P.firer = rig.wearer
 		P.fired_from = rig
@@ -201,11 +201,26 @@
 		P.preparePixelProjectile(target, rig.wearer)
 		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 		return NONE
-	if(melle)
-		var/range = melle["range"]
-		if(get_dist(rig.wearer, target)<range)
-			var/damage = melle["damage"]
-			var/damage_type = melle["damage_type"]
+
+/obj/item/rig_module/tool_deploy
+	name = "XS-7 Tactical analyzing module"
+	desc = "What do the numbers mean"
+	actions_to_add = list(/datum/action/rig_module/deploy_tool)
+/datum/action/rig_module/deploy_tool
+	name = "Deploy a tool"
+	desc = "Deploys a tol"
+	var/tool = /obj/item/analyzer
+	var/active = FALSE
+
+/datum/action/rig_module/deploy_tool/custom_trigger()
+	. = ..()
+	if(!active)
+		var/obj/item/item_to_place = new tool(src)
+		active = TRUE
+		rig.wearer.put_in_hands(item_to_place)
+		ADD_TRAIT(item_to_place, STICKY_NODROP, "RIG Module")
+
+
 
 
 /*
@@ -219,7 +234,7 @@ Laser Modules!
 /datum/action/rig_module/targeted/laser
 	name = "Toggle All-star C4 carbine module"
 	desc = "Laser go brr"
-	projtype = /obj/projectile/beam/laser/heavylaser
+	selected_projtype = /obj/projectile/beam/laser/heavylaser
 
 /obj/item/rig_module/targeted/laser_weak
 	name = "All-star C5 Laser module"
@@ -229,8 +244,7 @@ Laser Modules!
 /datum/action/rig_module/targeted/laser_weak
 	name = "Toggle All-star C5 carbine module"
 	desc = "Laser go brr"
-	projtype = /obj/projectile/beam/laser
-	/obj/projectile/beam/disabler
+	selected_projtype = /obj/projectile/beam/laser
 
 /obj/item/rig_module/targeted/disabler
 	name = "Armadyne KER-6 Disabler module"
@@ -240,7 +254,7 @@ Laser Modules!
 /datum/action/rig_module/targeted/disabler
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
-	projtype = /obj/projectile/beam/disabler
+	selected_projtype = /obj/projectile/beam/disabler
 /*
 Ballistic modules
 */

@@ -64,6 +64,7 @@
 	visible_message("[inserter] inserts the [module] into [src]")
 	module.moveToNullspace()
 	modules.Add(module)
+	module_weight_current += module.weight
 
 /obj/item/rig_suit/proc/handle_clothing_drop(obj/item/clothing/rig_suit_holder/clothing)
 	wearer.dropItemToGround(clothing, force = TRUE, silent = FALSE, invdrop = TRUE)
