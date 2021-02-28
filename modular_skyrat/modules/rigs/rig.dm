@@ -271,5 +271,7 @@
 			modules -= modules[id]
 			module.forceMove(wearer.loc)
 		if("configure_specific_module")
-			to_chat(wearer , text = "Bruh")
+			var/id = params["identifier"]
+			var/obj/item/rig_module/module = modules[id]
+			module.action_storage[1].ui_interact(wearer)
 

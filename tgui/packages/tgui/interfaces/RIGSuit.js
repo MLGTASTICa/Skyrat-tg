@@ -83,7 +83,7 @@ export const RIGSuit = (props, context) => {
                     <Button
                       content="Configure"
                       onClick={() => act('configure_specific_module', {
-                      identifier: module.name,
+                      identifier: module.id,
                     })} />
                   </>
                 )}>

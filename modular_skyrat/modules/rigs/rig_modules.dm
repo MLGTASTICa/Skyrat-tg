@@ -55,6 +55,7 @@
 
 /obj/item/rig_module/emag_act(mob/user, obj/item/card/emag/E)
 	. = ..()
+	emagged = 1
 
 /obj/item/rig_module/attackby(obj/item/I, mob/living/user, params)
 	. = ..()
@@ -165,6 +166,12 @@
 	desc = "The missile knows where it is by knowing where it isn't"
 	actions_to_add = list(/datum/action/rig_module/targeted)
 
+/obj/item/rig_module/targeted/wirecutter_act(mob/living/user, obj/item/I)
+	. = ..()
+	action_storage[1].ui_interact(user)
+	var/obj/item/rig_module/targeted/target = action_storage[1]
+	target.ui_interact(user)
+	to_chat(user, text = "you are targetting [target]")
 
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
@@ -174,6 +181,50 @@
 	var/selected_projtype = null
 	var/list/projectiles = list(/obj/projectile/beam/laser, /obj/projectile/beam/disabler)
 	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser)
+
+/datum/action/rig_module/targeted/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	to_chat(user, text = "called ui interact")
+	if(!ui)
+		ui = new(user, src, "RIGModuleTargeted", name)
+		ui.open()
+
+/datum/action/rig_module/targeted/ui_data(mob/user)
+	var/list/data = list()
+	var/counter = projectiles.len
+	var/special_counter = 0
+	for(var/datum/action/rig_module/targeted/act in module.action_storage)
+		special_counter++
+		var/list/special_proj = list()
+		special_proj["proj_name"] = act.name
+		special_proj["proj_id"] = special_counter
+		data["projectiles"] += list(special_proj)
+
+	return data
+
+	/*counter = emag_projectiles.len
+	while(counter)
+		var/obj/projectile/proj_emag = emag_projectiles[counter]
+		counter++
+		var/list/emag_proj = list()
+		emag_proj["name"] = proj_emag.name
+		emag_proj["id"] = counter
+		emag_proj["emagged"] = TRUE
+		data["emag_projectiles"] += list(emag_proj)
+		counter--*/
+
+/datum/action/rig_module/targeted/ui_act(action, params)
+	switch(action)
+		if("pick")
+			var/counter = params["identifier"]
+			var/magged = params["emagged"]
+			if(magged)
+				selected_projtype = emag_projectiles[counter]
+			else
+				selected_projtype = projectiles[counter]
+
+/datum/action/rig_module/targeted/ui_state()
+	return GLOB.always_state
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
@@ -209,16 +260,23 @@
 /datum/action/rig_module/deploy_tool
 	name = "Deploy a tool"
 	desc = "Deploys a tol"
-	var/tool = /obj/item/analyzer
+	var/tool_to_deploy = /obj/item/analyzer
 	var/active = FALSE
+	var/obj/item/tool_reference = null
 
 /datum/action/rig_module/deploy_tool/custom_trigger()
 	. = ..()
 	if(!active)
-		var/obj/item/item_to_place = new tool(src)
+		if(!tool_reference)
+			var/obj/item/item_to_place = new tool_to_deploy(src)
+			ADD_TRAIT(item_to_place, TRAIT_NODROP, "RIG Module")
+			tool_reference = item_to_place
 		active = TRUE
-		rig.wearer.put_in_hands(item_to_place)
-		ADD_TRAIT(item_to_place, STICKY_NODROP, "RIG Module")
+		rig.wearer.put_in_hands(tool_reference)
+	else
+		tool_reference.moveToNullspace()
+		active = FALSE
+
 
 
 
