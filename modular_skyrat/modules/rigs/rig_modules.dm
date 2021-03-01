@@ -191,14 +191,17 @@
 
 /datum/action/rig_module/targeted/ui_data(mob/user)
 	var/list/data = list()
-	var/counter = projectiles.len
-	var/special_counter = 0
-	for(var/datum/action/rig_module/targeted/act in module.action_storage)
-		special_counter++
+	var/special_counter = projectiles.len
+	data["projectiles"] = list()
+	while(special_counter)
 		var/list/special_proj = list()
-		special_proj["proj_name"] = act.name
+		//var/obj/projectile/handle = projectiles[special_counter]
+		special_proj["proj_name"] = "Debug data"
 		special_proj["proj_id"] = special_counter
 		data["projectiles"] += list(special_proj)
+		special_counter--
+
+	data["placeholder"] = "test"
 
 	return data
 
@@ -214,6 +217,9 @@
 		counter--*/
 
 /datum/action/rig_module/targeted/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
 	switch(action)
 		if("pick")
 			var/counter = params["identifier"]
