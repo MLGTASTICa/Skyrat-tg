@@ -200,6 +200,7 @@
 		special_proj["proj_id"] = special_counter
 		data["projectiles"] += list(special_proj)
 		special_counter--
+		var/ao
 
 	data["placeholder"] = "test"
 
