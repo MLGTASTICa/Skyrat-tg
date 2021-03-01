@@ -13,15 +13,20 @@ export const RIGModuleTargeted = (props, context) => {
       width = {300}
       height = {600}>
       <Window.Content scrollable>
-        <Section title="Module control">
+        <Section title="hotload test">
           <LabeledList>
             <LabeledList.Item label="debug">
+              <Button
+                key = {"bruh"}
+                content = {"breuh"}
+                >
+              </Button>
               {projectiles.map(projectile => (
                 <Button
-                  key = {projectile.proj_id}
-                  content = {projectile.name}
+                  key = {debug}
+                  content = {"debg"}
                   onClick={() => act('pick', {
-                  identifier: projectile.id,
+                  identifier: projectile.proj_id,
                 })} />
               ))}
             </LabeledList.Item>

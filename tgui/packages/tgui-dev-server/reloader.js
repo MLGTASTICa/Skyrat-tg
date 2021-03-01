@@ -19,7 +19,7 @@ const SEARCH_LOCATIONS = [
   // Custom location
   process.env.BYOND_CACHE,
   // Windows
-  `${HOME}/*/BYOND/cache`,
+  `${HOME}/*/Documents/BYOND/cache`,
   // Wine
   `${HOME}/.wine/drive_c/users/*/*/BYOND/cache`,
   // Lutris
