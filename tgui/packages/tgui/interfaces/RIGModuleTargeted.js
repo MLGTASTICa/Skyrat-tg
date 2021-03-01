@@ -23,8 +23,8 @@ export const RIGModuleTargeted = (props, context) => {
               </Button>
               {projectiles.map(projectile => (
                 <Button
-                  key = {debug}
-                  content = {"debg"}
+                  key = {projectile.proj_id}
+                  content = {projectile.proj_name}
                   onClick={() => act('pick', {
                   identifier: projectile.proj_id,
                 })} />
