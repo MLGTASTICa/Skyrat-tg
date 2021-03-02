@@ -25,6 +25,8 @@
 	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
 	var/fried = FALSE
+	/// Under PAI control at this moment?
+	var/PAI_control = FALSE
 	/// Eee
 	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
 	/// This is the action storage, adding actions is handled in the item initialize
@@ -113,7 +115,7 @@
 	fire_power_use = 300
 	/// The beaker we will inject from
 	var/obj/item/reagent_containers/selected_beaker = null
-	actions_to_add = list(/datum/action/rig_module/reagent/inject, /datum/action/rig_module/reagent/next)
+	actions_to_add = list(/datum/action/rig_module/reagent/inject)
 
 /obj/item/rig_module/reagent/ComponentInitialize()
 	. = ..()
@@ -135,42 +137,56 @@
 /datum/action/rig_module/reagent/inject/custom_trigger()
 	. = ..()
 	var/obj/item/rig_module/reagent/module_handler = module
-	if(!module_handler.contents)
-		return to_chat(rig.wearer, text = "No beakers inside the module!")
 	if(!module_handler.selected_beaker)
 		return to_chat(rig.wearer, text ="No beaker selected!")
 	module_handler.selected_beaker.reagents.trans_to(rig.wearer, 20)
 
-/datum/action/rig_module/reagent/next
-	name = "Switch beaker"
-	desc = "Switch to the next beaker of rage-inducing drugs"
+/datum/action/rig_module/reagent/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	to_chat(user, text = "called ui interact")
+	if(!ui)
+		ui = new(user, src, "RIGModuleReagent", name)
+		ui.open()
 
-/datum/action/rig_module/reagent/next/custom_trigger()
-	. = ..()
-	var/obj/item/rig_module/reagent/module_handler = module
-	if(!module_handler.contents)
-		return to_chat(rig.wearer, text = "No beakers inside the module!")
-	if(!module_handler.selected_beaker)
-		module_handler.selected_beaker = module.contents[1]
-	var/counter = module_handler.contents.Find(module_handler.selected_beaker,1,0)
-	if(counter == module_handler.contents.len)
-		counter = 1
-	else
+/datum/action/rig_module/reagent/ui_data(mob/user)
+	var/list/data = list()
+	var/counter = 0
+	for(var/obj/item/reagent_containers/beaker in module.contents)
+		var/reagent_name = beaker.reagents.get_master_reagent_name()
 		counter++
-	module_handler.selected_beaker = module.contents[counter]
-	var/reagent_name = module_handler.selected_beaker.reagents.get_master_reagent_name()
-	to_chat(rig.wearer, text = "Beaker selected with [reagent_name]")
+		var/list/handle = list()
+		handle["reg_name"] = reagent_name
+		handle["reg_id"] = counter
+		var/obj/item/rig_module/reagent/handler = module
+		if(handler.selected_beaker == beaker)
+			handle["reg_color"] = "green"
+		else
+			handle["reg_color"] = "blue"
+		data["reagents"] += list(handle)
+
+	return data
+
+/datum/action/rig_module/reagent/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("pick")
+			var/id = params["identifier"]
+			var/obj/item/rig_module/reagent/handle = module
+			handle.selected_beaker = module.contents[id]
+
+/datum/action/rig_module/reagent/ui_state()
+	if(!rig.powered || module.fried || module.PAI_control)
+		return UI_UPDATE
+	if(!rig.wearer)
+		return UI_CLOSE
+	return UI_INTERACTIVE
 
 /obj/item/rig_module/targeted
 	name = "Targetting system"
 	desc = "The missile knows where it is by knowing where it isn't"
 	actions_to_add = list(/datum/action/rig_module/targeted)
-
-/obj/item/rig_module/targeted/wirecutter_act(mob/living/user, obj/item/I)
-	. = ..()
-	action_storage[1].ui_interact(user)
-	var/obj/item/rig_module/targeted/target = action_storage[1]
-	target.ui_interact(user)
 
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
@@ -201,6 +217,10 @@
 		special_proj["proj_name"] = projectiles[special_counter]
 		special_proj["proj_id"] = special_counter - 1
 		special_proj["proj_emag"] = FALSE
+		if(selected_projtype == projectiles[special_counter - 1])
+			special_proj["proj_color"] = "green"
+		else
+			special_proj["proj_color"] = "blue"
 		data["projectiles"] += list(special_proj)
 		special_counter-= 2
 	if(module.emagged)
@@ -209,6 +229,10 @@
 			emag_proj["proj_name"] = emag_projectiles[emag_counter]
 			emag_proj["proj_id"] = emag_counter - 1
 			emag_proj["proj_emag"] = TRUE
+			if(selected_projtype == emag_projectiles[emag_counter - 1])
+				emag_proj["proj_color"] = "green"
+			else
+				emag_proj["proj_color"] = "red"
 			data["projectiles"] += list(emag_proj)
 			emag_counter-= 2
 
@@ -239,7 +263,11 @@
 				selected_projtype = projectiles[counter]
 
 /datum/action/rig_module/targeted/ui_state()
-	return GLOB.always_state
+	if(!rig.powered || module.fried || module.PAI_control)
+		return UI_UPDATE
+	if(!rig.wearer)
+		return UI_CLOSE
+	return UI_INTERACTIVE
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
@@ -257,7 +285,7 @@
 	SIGNAL_HANDLER
 	rig.wearer.swap_hand()
 	if(selected_projtype)
-		if(emagged_projectiles.Find(selected_projtype))
+		if(emag_projectiles.Find(selected_projtype))
 			if(!rig.use_power(emagged_firecost))
 				return NONE
 		if(projectiles.Find(selected_projtype))
@@ -305,6 +333,7 @@ Laser Modules!
 	name = "All-star C4 Laser module"
 	desc = "A very compact module installed with a high-performance compact laser"
 	actions_to_add = list(/datum/action/rig_module/targeted/laser)
+	cooldown = 1 SECONDS
 
 /datum/action/rig_module/targeted/laser
 	name = "Toggle All-star C4 carbine module"
@@ -313,12 +342,12 @@ Laser Modules!
 	emag_projectiles = list(/obj/projectile/beam/laser/accelerator, "Acceletor Cannon", /obj/projectile/beam/laser/hellfire, "Hellfire laser")
 	normal_firecost = 100
 	emagged_firecost = 200
-	cooldown = 1 * SECONDS
 
 /obj/item/rig_module/targeted/laser_weak
 	name = "All-star C5 Laser module"
 	desc = "A very compact module installed with a a low performance laser"
 	actions_to_add = list(/datum/action/rig_module/targeted/laser_weak)
+	cooldown = 1  SECONDS * 1.25
 
 /datum/action/rig_module/targeted/laser_weak
 	name = "Toggle All-star C5 carbine module"
@@ -327,20 +356,18 @@ Laser Modules!
 	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
 	normal_firecost = 200
 	emagged_firecost = 250
-	cooldown = 1 * SECOND * 1.25
 
 /obj/item/rig_module/targeted/disabler_minigun
 	name = "KER-6 Disabler module"
 	desc = "A experimental disabler laser minigun."
-
+	cooldown = 1 SECONDS * 0.25
 /datum/action/rig_module/targeted/disabler
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
 	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
 	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
-	cooldown = 1 * SECOND * 0.25
 	normal_firecost = 150
-	emagged_firecos = 250
+	emagged_firecost = 250
 /*
 Ballistic modules
 */

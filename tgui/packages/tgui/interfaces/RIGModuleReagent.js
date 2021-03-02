@@ -2,27 +2,26 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 
-export const RIGModuleTargeted = (props, context) => {
+export const RIGModuleReagent = (props, context) => {
   const { act, data } = useBackend(context);
   const {
-    projectiles,
+    reagents,
   } = data;
   return (
     <Window resizable
       height = {100}
       >
       <Window.Content scrollable>
-        <Section title="Laser lens configurations">
+        <Section title="Available Beakers">
           <LabeledList>
-            <LabeledList.Item label = {"Laser type"}>
-              {projectiles.map(projectile => (
+            <LabeledList.Item label = {"Selected Beaker"}>
+              {reagents.map(reagent => (
                 <Button
-                  color = {projectile.proj_color}
-                  key = {projectile.proj_id}
-                  content = {projectile.proj_name}
+                  color = {reagent.reg_color}
+                  key = {reagent.reg_id}
+                  content = {reagent.reg_name}
                   onClick={() => act('pick', {
-                  identifier: projectile.proj_id,
-                  emagged: projectile.proj_emag,
+                  identifier: reagent.reg_id,
                 })} />
               ))}
             </LabeledList.Item>
