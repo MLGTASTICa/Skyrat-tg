@@ -171,6 +171,7 @@
 	action_storage[1].ui_interact(user)
 	var/obj/item/rig_module/targeted/target = action_storage[1]
 	target.ui_interact(user)
+
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
@@ -312,7 +313,7 @@ Laser Modules!
 	emag_projectiles = list(/obj/projectile/beam/laser/accelerator, "Acceletor Cannon", /obj/projectile/beam/laser/hellfire, "Hellfire laser")
 	normal_firecost = 100
 	emagged_firecost = 200
-	cooldown = 1 SECOND
+	cooldown = 1 * SECONDS
 
 /obj/item/rig_module/targeted/laser_weak
 	name = "All-star C5 Laser module"
@@ -326,7 +327,7 @@ Laser Modules!
 	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
 	normal_firecost = 200
 	emagged_firecost = 250
-	cooldown = 1 SECOND * 1.25
+	cooldown = 1 * SECOND * 1.25
 
 /obj/item/rig_module/targeted/disabler_minigun
 	name = "KER-6 Disabler module"
@@ -337,7 +338,7 @@ Laser Modules!
 	desc = "Laser go brr"
 	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
 	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
-	cooldown = 1 SECOND * 0.25
+	cooldown = 1 * SECOND * 0.25
 	normal_firecost = 150
 	emagged_firecos = 250
 /*
