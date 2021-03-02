@@ -1,6 +1,5 @@
 import { useBackend } from '../backend';
 import { Button, LabeledList, Section } from '../components';
-import { LabeledListDivider } from '../components/LabeledList';
 import { Window } from '../layouts';
 
 export const RIGModuleTargeted = (props, context) => {
@@ -9,9 +8,9 @@ export const RIGModuleTargeted = (props, context) => {
     projectiles,
   } = data;
   return (
-    <Window>
+    <Window resizable>
       <Window.Content scrollable>
-        <Section title="Module configuration">
+        <Section title="Laser lens configurations">
           <LabeledList>
             <LabeledList.Item>
               {projectiles.map(projectile => (
@@ -20,6 +19,7 @@ export const RIGModuleTargeted = (props, context) => {
                   content = {projectile.proj_name}
                   onClick={() => act('pick', {
                   identifier: projectile.proj_id,
+                  emagged: projectile.proj_emag,
                 })} />
               ))}
             </LabeledList.Item>

@@ -179,8 +179,8 @@
 	var/toggled = FALSE
 	/// What kind of projectile do we make ? its typepath.
 	var/selected_projtype = null
-	var/list/projectiles = list(/obj/projectile/beam/laser, /obj/projectile/beam/disabler)
-	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser)
+	var/list/projectiles = list(/obj/projectile/beam/laser, "Laser", /obj/projectile/beam/disabler, "Disabler")
+	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser, "Overcharged laser")
 
 /datum/action/rig_module/targeted/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -191,18 +191,25 @@
 
 /datum/action/rig_module/targeted/ui_data(mob/user)
 	var/list/data = list()
+	var/emag_counter = emag_projectiles.len
 	var/special_counter = projectiles.len
 	data["projectiles"] = list()
 	while(special_counter)
 		var/list/special_proj = list()
 		//var/obj/projectile/handle = projectiles[special_counter]
-		special_proj["proj_name"] = "Debug data"
-		special_proj["proj_id"] = special_counter
+		special_proj["proj_name"] = projectiles[special_counter]
+		special_proj["proj_id"] = special_counter - 1
+		special_proj["proj_emag"] = FALSE
 		data["projectiles"] += list(special_proj)
-		special_counter--
-		var/ao
-
-	data["placeholder"] = "test"
+		special_counter-= 2
+	if(module.emagged)
+		while(emag_counter)
+			var/list/emag_proj = list()
+			emag_proj["proj_name"] = emag_projectiles[emag_counter]
+			emag_proj["proj_id"] = emag_counter - 1
+			emag_proj["proj_emag"] = TRUE
+			data["projectiles"] += list(emag_proj)
+			emag_counter-= 2
 
 	return data
 
