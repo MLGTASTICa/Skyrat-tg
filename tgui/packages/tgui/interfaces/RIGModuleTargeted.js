@@ -9,18 +9,11 @@ export const RIGModuleTargeted = (props, context) => {
     projectiles,
   } = data;
   return (
-    <Window
-      width = {300}
-      height = {600}>
+    <Window>
       <Window.Content scrollable>
-        <Section title="hotload test">
+        <Section title="Module configuration">
           <LabeledList>
-            <LabeledList.Item label="debug">
-              <Button
-                key = {"bruh"}
-                content = {"breuh"}
-                >
-              </Button>
+            <LabeledList.Item>
               {projectiles.map(projectile => (
                 <Button
                   key = {projectile.proj_id}
