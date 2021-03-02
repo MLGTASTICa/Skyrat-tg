@@ -8,11 +8,13 @@ export const RIGModuleTargeted = (props, context) => {
     projectiles,
   } = data;
   return (
-    <Window resizable>
+    <Window resizable
+      height = {100}
+      >
       <Window.Content scrollable>
         <Section title="Laser lens configurations">
           <LabeledList>
-            <LabeledList.Item>
+            <LabeledList.Item label = {"Laser type"}>
               {projectiles.map(projectile => (
                 <Button
                   key = {projectile.proj_id}

@@ -171,16 +171,16 @@
 	action_storage[1].ui_interact(user)
 	var/obj/item/rig_module/targeted/target = action_storage[1]
 	target.ui_interact(user)
-	to_chat(user, text = "you are targetting [target]")
-
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
 	var/toggled = FALSE
 	/// What kind of projectile do we make ? its typepath.
 	var/selected_projtype = null
+	var/normal_firecost = 200
+	var/emagged_firecost = 500
 	var/list/projectiles = list(/obj/projectile/beam/laser, "Laser", /obj/projectile/beam/disabler, "Disabler")
-	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser, "Overcharged laser")
+	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser, "Overcharged Laser")
 
 /datum/action/rig_module/targeted/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -256,6 +256,12 @@
 	SIGNAL_HANDLER
 	rig.wearer.swap_hand()
 	if(selected_projtype)
+		if(emagged_projectiles.Find(selected_projtype))
+			if(!rig.use_power(emagged_firecost))
+				return NONE
+		if(projectiles.Find(selected_projtype))
+			if(!rig.use_power(normal_firecost))
+				return NONE
 		var/obj/projectile/P = new selected_projtype(rig.wearer)
 		P.starting = rig.wearer.loc
 		P.firer = rig.wearer
@@ -301,8 +307,12 @@ Laser Modules!
 
 /datum/action/rig_module/targeted/laser
 	name = "Toggle All-star C4 carbine module"
-	desc = "Laser go brr"
-	selected_projtype = /obj/projectile/beam/laser/heavylaser
+	desc = "An extremly powerfull module , being capable of firing lasers of extreme power at low costs."
+	projectiles = list(/obj/projectile/beam/laser, "Laser", /obj/projectile/beam/disabler, "Disabler", /obj/projectile/beam/laser/heavylaser , "Overcharged Laser")
+	emag_projectiles = list(/obj/projectile/beam/laser/accelerator, "Acceletor Cannon", /obj/projectile/beam/laser/hellfire, "Hellfire laser")
+	normal_firecost = 100
+	emagged_firecost = 200
+	cooldown = 1 SECOND
 
 /obj/item/rig_module/targeted/laser_weak
 	name = "All-star C5 Laser module"
@@ -312,17 +322,24 @@ Laser Modules!
 /datum/action/rig_module/targeted/laser_weak
 	name = "Toggle All-star C5 carbine module"
 	desc = "Laser go brr"
-	selected_projtype = /obj/projectile/beam/laser
+	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
+	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
+	normal_firecost = 200
+	emagged_firecost = 250
+	cooldown = 1 SECOND * 1.25
 
-/obj/item/rig_module/targeted/disabler
-	name = "Armadyne KER-6 Disabler module"
-	desc = "A very compact module installed with a peformant disabler!"
-	actions_to_add = list(/datum/action/rig_module/targeted/disabler)
+/obj/item/rig_module/targeted/disabler_minigun
+	name = "KER-6 Disabler module"
+	desc = "A experimental disabler laser minigun."
 
 /datum/action/rig_module/targeted/disabler
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
-	selected_projtype = /obj/projectile/beam/disabler
+	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
+	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
+	cooldown = 1 SECOND * 0.25
+	normal_firecost = 150
+	emagged_firecos = 250
 /*
 Ballistic modules
 */
