@@ -283,6 +283,8 @@
 
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
+	if(!ispAI(user) || !user.stat == CONSCIOUS)
+		return NONE
 	rig.wearer.swap_hand()
 	if(selected_projtype)
 		if(emag_projectiles.Find(selected_projtype))
@@ -301,6 +303,34 @@
 		P.preparePixelProjectile(target, rig.wearer)
 		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 		return NONE
+
+/obj/item/rig_module/targeted_ballistic
+	name = "Ballistic targetting system"
+	desc = "Put ammo in this shitty module and shoot it at the captain."
+	var/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
+	var/ammo_amount = list()
+	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
+
+/obj/item/rig_module/targeted_ballistic/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/storage/concrete)
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_combined_w_class = 40
+	STR.max_items = 10
+	STR.insert_preposition = "in"
+	STR.set_holdable(list(
+		/obj/item/ammo_box,
+		/obj/item/ammo_casing)
+
+/obj/item/rig_module/targeted_ballistic/Initialize()
+	. = ..()
+	RegisterSignal(src, COMSIG_STORAGE_ENTERED, .proc/ammo_calculate)
+
+/obj/item/rig_module/targeted_ballistic/ammo_calculate()
+
+/datum/action/rig_module/targeted_ballistic
+	name = "Toggle ballistic annihilation"
+	desc = "Merge before balance checks"
 
 /obj/item/rig_module/tool_deploy
 	name = "XS-7 Tactical analyzing module"
