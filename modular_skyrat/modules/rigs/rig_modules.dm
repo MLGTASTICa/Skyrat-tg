@@ -320,13 +320,13 @@
 	STR.insert_preposition = "in"
 	STR.set_holdable(list(
 		/obj/item/ammo_box,
-		/obj/item/ammo_casing)
-
+		/obj/item/ammo_casing))
+/*
 /obj/item/rig_module/targeted_ballistic/Initialize()
 	. = ..()
 	RegisterSignal(src, COMSIG_STORAGE_ENTERED, .proc/ammo_calculate)
 
-/obj/item/rig_module/targeted_ballistic/ammo_calculate()
+/obj/item/rig_module/targeted_ballistic/ammo_calculate()*/
 
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
