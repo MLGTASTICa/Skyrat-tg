@@ -191,7 +191,6 @@
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
 	desc = "Blast the fucking clown off."
-	var/toggled = FALSE
 	/// What kind of projectile do we make ? its typepath.
 	var/selected_projtype = null
 	var/normal_firecost = 200
@@ -271,14 +270,14 @@
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
-	if(toggled)
+	if(module.active)
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
-		toggled = FALSE
+		module.active = FALSE
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
-		toggled = TRUE
+		module.active = TRUE
 
 
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
@@ -309,6 +308,7 @@
 	desc = "Put ammo in this shitty module and shoot it at the captain."
 	var/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
 	var/ammo_amount = list()
+	var/selected_projtype = null
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
 
 /obj/item/rig_module/targeted_ballistic/ComponentInitialize()
@@ -321,16 +321,69 @@
 	STR.set_holdable(list(
 		/obj/item/ammo_box,
 		/obj/item/ammo_casing))
-/*
+
 /obj/item/rig_module/targeted_ballistic/Initialize()
 	. = ..()
-	RegisterSignal(src, COMSIG_STORAGE_ENTERED, .proc/ammo_calculate)
+	RegisterSignal(src, COMSIG_STORAGE_ITEM_INSERTED, .proc/ammo_calculate)
 
-/obj/item/rig_module/targeted_ballistic/ammo_calculate()*/
+/obj/item/rig_module/targeted_ballistic/proc/ammo_calculate()
+	var/obj/item/rig_module/targeted_ballistic/module_handle = src
+	for(var/obj/item/potential_box in contents)
+		if(istype(potential_box, /obj/item/ammo_box))
+			var/obj/item/ammo_box/box = potential_box
+			var/counter = module_handle.ammo_calibers.len
+			while(counter)
+				if(box.ammo_type == module_handle.ammo_calibers[counter])
+					for(var/obj/item/ammo_casing/bullet in box.stored_ammo)
+						if(!(bullet.loaded_projectile))
+							return FALSE
+						if(module_handle.ammo_amount.Find(bullet,1,0))
+							var/spot = module_handle.ammo_amount.Find(bullet,1,0)
+							module_handle.ammo_amount[spot+1] = module_handle.ammo_amount[spot+1] + 1
+							return
+						module_handle.ammo_amount += bullet
+						module_handle.ammo_amount += bullet.caliber
+					box.update_appearance()
+			counter--
 
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
 	desc = "Merge before balance checks"
+
+/datum/action/rig_module/targeted_ballistic/custom_trigger()
+	. = ..()
+	if(module.active)
+		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
+		name = "Toggle targetting on"
+		module.active = FALSE
+	else
+		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
+		name = "Toggle targetting off"
+		module.active = TRUE
+
+/datum/action/rig_module/targeted_ballistic/proc/on_middle_click_rig(mob/user, atom/target)
+	SIGNAL_HANDLER
+	var/obj/item/rig_module/targeted_ballistic/module_handle = module
+	if(!ispAI(user) || !user.stat == CONSCIOUS)
+		return NONE
+	rig.wearer.swap_hand()
+	if(module_handle.selected_projtype)
+		var/spot = module_handle.ammo_amount.Find(selected_projtype,1,0)
+		var/ammo_count = module_handle.ammo_amount[spot+1]
+		if(!ammo_count)
+			return FALSE
+		var/obj/projectile/P = new module_handle.selected_projtype(rig.wearer)
+		module_handle.ammo_amount[spot+1] = ammo_count - 1
+		P.starting = rig.wearer.loc
+		P.firer = rig.wearer
+		P.fired_from = rig
+		P.yo = target.y - rig.wearer.loc.y
+		P.xo = target.x - rig.wearer.loc.x
+		P.original = target
+		P.preparePixelProjectile(target, rig.wearer)
+		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+		return NONE
+
 
 /obj/item/rig_module/tool_deploy
 	name = "XS-7 Tactical analyzing module"
