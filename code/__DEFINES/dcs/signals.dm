@@ -201,8 +201,6 @@
 #define COMSIG_STORAGE_ENTERED "storage_entered"
 //from base of atom/movable/on_exit_storage(): (datum/component/storage/concrete/master_storage)
 #define COMSIG_STORAGE_EXITED "storage_exited"
-// SKYRAT EDIT - Added in the master_storage component! Called whenever we put an item inside of it with the argument of the item ref.
-#define COMSIG_STORAGE_ITEM_INSERTED "storage_item_inserted"
 
 ///from base of atom/expose_reagents(): (/list, /datum/reagents, methods, volume_modifier, show_message)
 #define COMSIG_ATOM_EXPOSE_REAGENTS "atom_expose_reagents"

@@ -306,8 +306,9 @@
 /obj/item/rig_module/targeted_ballistic
 	name = "Ballistic targetting system"
 	desc = "Put ammo in this shitty module and shoot it at the captain."
-	var/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
-	var/ammo_amount = list()
+	var/list/ammo_projectiles = list(/obj/projectile/bullet/mm712x82, /obj/projectile/bullet/c9mm, /obj/projectile/bullet/a357)
+	var/list/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
+	var/list/ammo_amount = list(25,5,0)
 	var/selected_projtype = null
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
 
@@ -319,39 +320,35 @@
 	STR.max_items = 10
 	STR.insert_preposition = "in"
 	STR.set_holdable(list(
-		/obj/item/ammo_box,
-		/obj/item/ammo_casing))
+		/obj/item/ammo_box
+	))
 
-/obj/item/rig_module/targeted_ballistic/Initialize()
-	. = ..()
-	RegisterSignal(src, COMSIG_STORAGE_ITEM_INSERTED, .proc/ammo_calculate)
+/obj/item/rig_module/targeted_ballistic/attackby_secondary(obj/item/weapon, mob/user, params)
+	ammo_calculate()
+	to_chat(user , text = "Storing bullets!")
+	..()
 
 /obj/item/rig_module/targeted_ballistic/proc/ammo_calculate()
-	var/obj/item/rig_module/targeted_ballistic/module_handle = src
-	for(var/obj/item/potential_box in contents)
-		if(istype(potential_box, /obj/item/ammo_box))
-			var/obj/item/ammo_box/box = potential_box
-			var/counter = module_handle.ammo_calibers.len
-			while(counter)
-				if(box.ammo_type == module_handle.ammo_calibers[counter])
-					for(var/obj/item/ammo_casing/bullet in box.stored_ammo)
-						if(!(bullet.loaded_projectile))
-							return FALSE
-						if(module_handle.ammo_amount.Find(bullet,1,0))
-							var/spot = module_handle.ammo_amount.Find(bullet,1,0)
-							module_handle.ammo_amount[spot+1] = module_handle.ammo_amount[spot+1] + 1
-							return
-						module_handle.ammo_amount += bullet
-						module_handle.ammo_amount += bullet.caliber
-					box.update_appearance()
-			counter--
-
+	for(var/obj/item/ammo_box/box in contents)
+		for(var/obj/item/ammo_casing/bullet in box.stored_ammo)
+			if(!bullet.projectile_type)
+				return FALSE
+			if(!(ammo_calibers.Find(bullet.caliber,1,0)))
+				return FALSE
+			var/spot_to_add = ammo_calibers.Find(bullet.caliber,1,0)
+			ammo_amount[spot_to_add]++
+			bullet.moveToNullspace()
+			qdel(bullet)
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
 	desc = "Merge before balance checks"
+	var/selected_projtype = null
+	var/selected_projtype_ammo = 0
 
 /datum/action/rig_module/targeted_ballistic/custom_trigger()
 	. = ..()
+	if(!selected_projtype)
+		return FALSE
 	if(module.active)
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
@@ -367,13 +364,11 @@
 	if(!ispAI(user) || !user.stat == CONSCIOUS)
 		return NONE
 	rig.wearer.swap_hand()
-	if(module_handle.selected_projtype)
-		var/spot = module_handle.ammo_amount.Find(selected_projtype,1,0)
-		var/ammo_count = module_handle.ammo_amount[spot+1]
-		if(!ammo_count)
-			return FALSE
-		var/obj/projectile/P = new module_handle.selected_projtype(rig.wearer)
-		module_handle.ammo_amount[spot+1] = ammo_count - 1
+	if(selected_projtype)
+		var/ammo_spot = module_handle.ammo_projectiles.Find(selected_projtype,1,0)
+		if(!selected_projtype_ammo)
+			return NONE
+		var/obj/projectile/P = new selected_projtype(rig.wearer)
 		P.starting = rig.wearer.loc
 		P.firer = rig.wearer
 		P.fired_from = rig
@@ -382,8 +377,48 @@
 		P.original = target
 		P.preparePixelProjectile(target, rig.wearer)
 		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+		selected_projtype_ammo--
+		module_handle.ammo_amount[ammo_spot]--
 		return NONE
 
+/datum/action/rig_module/targeted_ballistic/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	to_chat(user, text = "called ui interact")
+	if(!ui)
+		ui = new(user, src, "RIGModuleTargetedBallistic", name)
+		ui.open()
+
+/datum/action/rig_module/targeted_ballistic/ui_data(mob/user)
+	var/list/data = list()
+	var/obj/item/rig_module/targeted_ballistic/module_handle = module
+	var/counter = module_handle.ammo_amount.len
+	while(counter)
+		var/list/bullet_data = list()
+		bullet_data["bullet_count"] = module_handle.ammo_amount[counter]
+		bullet_data["bullet_caliber"] = module_handle.ammo_calibers[counter]
+		if(selected_projtype == module_handle.ammo_calibers[counter])
+			bullet_data["bullet_color"] = "green"
+		else
+			bullet_data["bullet_color"] = "blue"
+		data["bullets"] += list(bullet_data)
+		counter--
+
+	return data
+
+/datum/action/rig_module/targeted_ballistic/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("pick")
+			var/obj/item/rig_module/targeted_ballistic/handle = module
+			var/caliber = params["bulletcaliber"]
+			var/spot = handle.ammo_calibers.Find(caliber,1,0)
+			selected_projtype = handle.ammo_projectiles[spot]
+			selected_projtype_ammo = handle.ammo_amount[spot]
+
+/datum/action/rig_module/targeted_ballistic/ui_state()
+	return GLOB.always_state
 
 /obj/item/rig_module/tool_deploy
 	name = "XS-7 Tactical analyzing module"

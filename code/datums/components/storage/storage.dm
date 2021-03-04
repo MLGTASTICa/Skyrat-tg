@@ -684,7 +684,6 @@
 	if(M)
 		parent.add_fingerprint(M)
 	. = master.handle_item_insertion_from_slave(src, I, prevent_warning, M)
-	SEND_SIGNAL(parent, COMSIG_STORAGE_ITEM_INSERTED, I)
 
 /datum/component/storage/proc/mob_item_insertion_feedback(mob/user, mob/M, obj/item/I, override = FALSE)
 	if(silent && !override)
