@@ -6,6 +6,7 @@ export const RIGModuleTargeted = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     projectiles,
+    firemodes,
   } = data;
   return (
     <Window resizable
@@ -23,6 +24,17 @@ export const RIGModuleTargeted = (props, context) => {
                   onClick={() => act('pick', {
                   identifier: projectile.proj_id,
                   emagged: projectile.proj_emag,
+                })} />
+              ))}
+            </LabeledList.Item>
+            <LabeledList.Item label = {"Firemodes"}>
+              {firemodes.map(firemode => (
+                <Button
+                  color = {firemode.color}
+                  key = {firemode.shots}
+                  content = {firemode.shots}
+                  onClick={() => act('pick_firemode', {
+                  firemode_id: firemode.shots
                 })} />
               ))}
             </LabeledList.Item>

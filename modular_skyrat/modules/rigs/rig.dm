@@ -1,6 +1,6 @@
 /obj/item/rig_suit
 	name = "RIG Suit"
-	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'
+	icon = 'modular_skyrat/modules/rigs/icons/rig_sprites.dmi'
 	icon_state = "rig_back_default"
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK// Replaces the backpack , a fair trade-off for a mecha armour

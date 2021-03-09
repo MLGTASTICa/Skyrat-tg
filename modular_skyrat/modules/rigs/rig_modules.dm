@@ -1,7 +1,7 @@
 /obj/item/rig_module
 	name = "Rig module"
 	desc = "a motherfucking module"
-	icon = 'modular_skyrat/modules/rigs/rig_sprites.dmi'
+	icon = 'modular_skyrat/modules/rigs/icons/rig_sprites.dmi'
 	icon_state = "rig_back_default"
 	obj_integrity = 250
 	w_class = WEIGHT_CLASS_SMALL
@@ -11,6 +11,8 @@
 	var/weight = 1
 	/// Is it active????????
 	var/active = FALSE
+	/// Another var , but if its firing
+	var/firing = FALSE
 	/// If the item is emagged
 	var/emagged = FALSE
 	/// Cooldown for the use of this moduless ability
@@ -80,9 +82,10 @@
 	name = "Deploy module"
 	desc = "Deploy a module."
 	check_flags = AB_CHECK_CONSCIOUS
-	background_icon_state = "bg_agent"
-	icon_icon = 'icons/mob/actions/actions_items.dmi'
-	button_icon_state = "deploy_box"
+	button_icon = 'modular_skyrat/modules/rigs/icons/rig_actions.dmi'
+	background_icon_state = "rig_bg_default"
+	icon_icon = 'modular_skyrat/modules/rigs/icons/rig_actions.dmi'
+	button_icon_state = "rig_inject"
 	var/obj/item/rig_suit/rig
 	var/obj/item/rig_module/module
 	var/linked_to
@@ -193,10 +196,13 @@
 	desc = "Blast the fucking clown off."
 	/// What kind of projectile do we make ? its typepath.
 	var/selected_projtype = null
-	var/normal_firecost = 200
 	var/emagged_firecost = 500
+	var/normal_firecost = 200
 	var/list/projectiles = list(/obj/projectile/beam/laser, "Laser", /obj/projectile/beam/disabler, "Disabler")
 	var/list/emag_projectiles = list(/obj/projectile/beam/laser/heavylaser, "Overcharged Laser")
+	var/list/firemodes = list(1,3,5)
+	var/firemode = 1
+	var/fire_rate = 0.25 SECONDS
 
 /datum/action/rig_module/targeted/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -207,7 +213,6 @@
 
 /datum/action/rig_module/targeted/ui_data(mob/user)
 	var/list/data = list()
-	var/emag_counter = emag_projectiles.len
 	var/special_counter = projectiles.len
 	data["projectiles"] = list()
 	while(special_counter)
@@ -222,18 +227,29 @@
 			special_proj["proj_color"] = "blue"
 		data["projectiles"] += list(special_proj)
 		special_counter-= 2
+	special_counter = emag_projectiles.len
 	if(module.emagged)
-		while(emag_counter)
+		while(special_counter)
 			var/list/emag_proj = list()
-			emag_proj["proj_name"] = emag_projectiles[emag_counter]
-			emag_proj["proj_id"] = emag_counter - 1
+			emag_proj["proj_name"] = emag_projectiles[special_counter]
+			emag_proj["proj_id"] = special_counter - 1
 			emag_proj["proj_emag"] = TRUE
-			if(selected_projtype == emag_projectiles[emag_counter - 1])
+			if(selected_projtype == emag_projectiles[special_counter - 1])
 				emag_proj["proj_color"] = "green"
 			else
 				emag_proj["proj_color"] = "red"
 			data["projectiles"] += list(emag_proj)
-			emag_counter-= 2
+			special_counter -= 2
+	special_counter = firemodes.len
+	while(special_counter)
+		var/list/firemode_handle = list()
+		firemode_handle["shots"] = special_counter
+		if(firemode == firemodes[special_counter])
+			firemode_handle["color"] = "green"
+		else
+			firemode_handle["color"] = "blue"
+		data["firemodes"] += list(firemode_handle)
+		special_counter--
 
 	return data
 
@@ -260,13 +276,12 @@
 				selected_projtype = emag_projectiles[counter]
 			else
 				selected_projtype = projectiles[counter]
+		if("pick_firemode")
+			var/target = params["firemode_id"]
+			firemode = firemodes[target]
 
 /datum/action/rig_module/targeted/ui_state()
-	if(!rig.powered || module.fried || module.PAI_control)
-		return UI_UPDATE
-	if(!rig.wearer)
-		return UI_CLOSE
-	return UI_INTERACTIVE
+	return GLOB.always_state
 
 /datum/action/rig_module/targeted/custom_trigger()
 	. = ..()
@@ -274,34 +289,49 @@
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
 		module.active = FALSE
+		background_icon_state = "rig_bg_active"
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
 		module.active = TRUE
-
+		background_icon_state = "rig_bg_default"
+	UpdateButtonIcon(FALSE, TRUE)
+	to_chat(rig.wearer, text = "We tried 3 ")
 
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
-	if(!ispAI(user) || !user.stat == CONSCIOUS)
+	to_chat(rig.wearer, text = "We tried 2")
+/*	if(!ispAI(user) || user.stat != CONSCIOUS)
+		return NONE */
+	if(!(rig.use_power(module.emagged ? normal_firecost : emagged_firecost)))
 		return NONE
 	rig.wearer.swap_hand()
+	to_chat(rig.wearer, text = "We tried")
 	if(selected_projtype)
-		if(emag_projectiles.Find(selected_projtype))
-			if(!rig.use_power(emagged_firecost))
-				return NONE
-		if(projectiles.Find(selected_projtype))
-			if(!rig.use_power(normal_firecost))
-				return NONE
-		var/obj/projectile/P = new selected_projtype(rig.wearer)
-		P.starting = rig.wearer.loc
-		P.firer = rig.wearer
-		P.fired_from = rig
-		P.yo = target.y - rig.wearer.loc.y
-		P.xo = target.x - rig.wearer.loc.x
-		P.original = target
-		P.preparePixelProjectile(target, rig.wearer)
-		INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-		return NONE
+		if(firemode < 2)
+			handle_projectile_firing(target)
+		else
+			for(var/counter = 1 to firemode)
+				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), fire_rate * counter)
+
+/datum/action/rig_module/targeted/proc/handle_projectile_firing(atom/target)
+	SIGNAL_HANDLER
+	if(emag_projectiles.Find(selected_projtype))
+		if(!rig.use_power(emagged_firecost))
+			return NONE
+	else
+		if(!rig.use_power(normal_firecost))
+			return NONE
+	var/obj/projectile/P = new selected_projtype(rig.wearer)
+	P.starting = rig.wearer.loc
+	P.firer = rig.wearer
+	P.fired_from = rig
+	P.yo = target.y - rig.wearer.loc.y
+	P.xo = target.x - rig.wearer.loc.x
+	P.original = target
+	P.preparePixelProjectile(target, rig.wearer)
+	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+	return NONE
 
 // You might be asking , what the fuck is this ? list in lists in lists ?!?!? well , we need it to store a reference of each individual bullet
 /obj/item/rig_module/targeted_ballistic
@@ -310,8 +340,9 @@
 	var/list/ammo_projectiles = list(/obj/projectile/bullet/mm712x82, /obj/projectile/bullet/c9mm, /obj/projectile/bullet/a357)
 	var/list/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
 	var/list/ammo_amount = list(25,25,500)
+	var/list/ammo_capacity = list(100,100,100)
 	var/selected_projtype = null
-	var/fire_rate = 1 SECOND
+	var/fire_rate = 1 SECONDS
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
 
 /obj/item/rig_module/targeted_ballistic/ComponentInitialize()
@@ -343,6 +374,9 @@
 			ammo_amount[spot_to_add]++
 			bullet.moveToNullspace()
 			qdel(bullet)
+		box.update_ammo_count()
+	return TRUE
+
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
 	desc = "Merge before balance checks"
