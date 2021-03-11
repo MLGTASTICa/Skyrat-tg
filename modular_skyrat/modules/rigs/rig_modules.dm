@@ -337,19 +337,14 @@
 /obj/item/rig_module/targeted_ballistic
 	name = "Ballistic targetting system"
 	desc = "Put ammo in this shitty module and shoot it at the captain."
-/*
-a list holding lists that contain 1)CALIBER , 2)AMMO QUANTITY 3)AMMO CAPACITY 4) LIST WITH AMMO REFERENCES
-*/
-	var/list/ammos = list(
-		CALIBER_712X82MM = list(100, 500, list()),
-		CALIBER_10MM = list(0, 350, list()),
-		CALIBER_9MM = list(0, 350, list())
-	)
+	var/list/ammo_projectiles = list(/obj/projectile/bullet/mm712x82, /obj/projectile/bullet/c9mm, /obj/projectile/bullet/a357)
+	var/list/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
+	var/list/ammo_amount = list(25,25,500)
+	var/list/ammo_capacity = list(100,100,100)
+	var/selected_projtype = null
 	var/fire_rate = 1 SECONDS
-/*
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
-*/
-/*
+
 /obj/item/rig_module/targeted_ballistic/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/storage/concrete)
@@ -369,22 +364,24 @@ a list holding lists that contain 1)CALIBER , 2)AMMO QUANTITY 3)AMMO CAPACITY 4)
 /obj/item/rig_module/targeted_ballistic/proc/ammo_calculate()
 	for(var/obj/item/ammo_box/box in contents)
 		for(var/obj/item/ammo_casing/bullet in box.stored_ammo)
-			var/counter = ammos.len
-			while(counter)
-				var/list/ammo_to_acces = ammos[counter]
-				if(bullet.caliber == ammo_to_acces[1])
-					if(ammo_to_acces[4].len > ammo_to_acces[3])
-						return FALSE
-					bullet.moveToNullspace()
-					ammo_to_acces[4] += bullet
-					counter--
+			if(!bullet.projectile_type)
+				return FALSE
+			if(!(ammo_calibers.Find(bullet.caliber,1,0)))
+				return FALSE
+			var/spot_to_add = ammo_calibers.Find(bullet.caliber,1,0)
+			if(ammo_projectiles[spot_to_add] != bullet.projectile_type) // We only accept a SPECIFIC type of ammo , imagini loading IDHF's and shooting lethals.
+				return FALSE
+			ammo_amount[spot_to_add]++
+			bullet.moveToNullspace()
+			qdel(bullet)
 		box.update_ammo_count()
 	return TRUE
 
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
 	desc = "Merge before balance checks"
-	var/selected_caliber = null
+	var/selected_projtype = null
+	var/selected_projtype_ammo = 0
 	var/list/available_firemodes = list(1,3,5)
 	var/firemode = 1
 
@@ -407,37 +404,26 @@ a list holding lists that contain 1)CALIBER , 2)AMMO QUANTITY 3)AMMO CAPACITY 4)
 	//if(!ispAI(user) || !user.stat)
 	//	return NONE
 	rig.wearer.swap_hand()
-	if(selected_caliber)
-		if(firemode < 2)
-			handle_projectile_firing(target)
-		else
-			for(var/counter = 1 to firemode)
-				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), fire_rate * counter)
+	if(selected_projtype)
+		var/ammo_spot = module_handle.ammo_projectiles.Find(selected_projtype,1,0)
+		var/shots_to_handle = firemode
+		while(shots_to_handle)
+			if(!selected_projtype_ammo)
+				shots_to_handle = 0
+				break
+			var/obj/projectile/P = new selected_projtype(rig.wearer)
+			P.starting = rig.wearer.loc
+			P.firer = rig.wearer
+			P.fired_from = rig.wearer
+			P.yo = target.y - rig.wearer.loc.y
+			P.xo = target.x - rig.wearer.loc.x
+			P.original = target
+			P.preparePixelProjectile(target, rig.wearer)
+			INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+			selected_projtype_ammo--
+			module_handle.ammo_amount[ammo_spot]--
+			shots_to_handle--
 		return NONE
-
-/datum/action/rig_module/targeted_ballistic/handle_projectile_firing(target)
-	SIGNAL_HANDLER
-	var/counter = ammos.len
-	while(counter)
-		var/list/ammo_to_acces = ammos[counter]
-		if(ammo_to_acces[1] == selected_caliber)
-			counter = 0
-		counter--
-	var/projectiles = ammo_to_acces[4]
-	if(!(projectiles.len))
-		return FALSE
-	var/projectile = projectiles[1]
-	projectiles -= projectile
-	var/obj/projectile/P = new projectile(rig.wearer)
-	P.starting = rig.wearer.loc
-	P.firer = rig.wearer
-	P.fired_from = rig
-	P.yo = target.y - rig.wearer.loc.y
-	P.xo = target.x - rig.wearer.loc.x
-	P.original = target
-	P.preparePixelProjectile(target, rig.wearer)
-	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-	return NONE
 
 
 /datum/action/rig_module/targeted_ballistic/ui_interact(mob/user, datum/tgui/ui)
@@ -450,13 +436,12 @@ a list holding lists that contain 1)CALIBER , 2)AMMO QUANTITY 3)AMMO CAPACITY 4)
 /datum/action/rig_module/targeted_ballistic/ui_data(mob/user)
 	var/list/data = list()
 	var/obj/item/rig_module/targeted_ballistic/module_handle = module
-	var/counter = module_handle.ammos.len
+	var/counter = module_handle.ammo_amount.len
 	while(counter)
 		var/list/bullet_data = list()
-		var/list/ammo_to_acces = module_handle.ammos[counter]
-		bullet_data["bullet_count"] = ammo_to_acces[2]
-		bullet_data["bullet_caliber"] = ammo_to_acces[1]
-		if(selected_projtype == ammo_to_acces[1])
+		bullet_data["bullet_count"] = module_handle.ammo_amount[counter]
+		bullet_data["bullet_caliber"] = module_handle.ammo_calibers[counter]
+		if(selected_projtype == module_handle.ammo_projectiles[counter])
 			bullet_data["bullet_color"] = "green"
 		else
 			bullet_data["bullet_color"] = "blue"
@@ -496,7 +481,6 @@ a list holding lists that contain 1)CALIBER , 2)AMMO QUANTITY 3)AMMO CAPACITY 4)
 	name = "XS-7 Tactical analyzing module"
 	desc = "What do the numbers mean"
 	actions_to_add = list(/datum/action/rig_module/deploy_tool)
-
 /datum/action/rig_module/deploy_tool
 	name = "Deploy a tool"
 	desc = "Deploys a tol"
@@ -574,5 +558,4 @@ Reagent modules
 
 /*
 Melle modules
-*/
 */
