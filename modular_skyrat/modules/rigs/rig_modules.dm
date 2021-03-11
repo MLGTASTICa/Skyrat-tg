@@ -316,12 +316,6 @@
 
 /datum/action/rig_module/targeted/proc/handle_projectile_firing(atom/target)
 	SIGNAL_HANDLER
-	if(emag_projectiles.Find(selected_projtype))
-		if(!rig.use_power(emagged_firecost))
-			return NONE
-	else
-		if(!rig.use_power(normal_firecost))
-			return NONE
 	var/obj/projectile/P = new selected_projtype(rig.wearer)
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
@@ -337,9 +331,8 @@
 /obj/item/rig_module/targeted_ballistic
 	name = "Ballistic targetting system"
 	desc = "Put ammo in this shitty module and shoot it at the captain."
-	var/list/ammo_projectiles = list(/obj/projectile/bullet/mm712x82, /obj/projectile/bullet/c9mm, /obj/projectile/bullet/a357)
 	var/list/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
-	var/list/ammo_amount = list(25,25,500)
+	var/list/ammo_amount = list(list(),list(),list())
 	var/list/ammo_capacity = list(100,100,100)
 	var/selected_projtype = null
 	var/fire_rate = 1 SECONDS
@@ -369,19 +362,16 @@
 			if(!(ammo_calibers.Find(bullet.caliber,1,0)))
 				return FALSE
 			var/spot_to_add = ammo_calibers.Find(bullet.caliber,1,0)
-			if(ammo_projectiles[spot_to_add] != bullet.projectile_type) // We only accept a SPECIFIC type of ammo , imagini loading IDHF's and shooting lethals.
-				return FALSE
-			ammo_amount[spot_to_add]++
+			ammo_amount[spot_to_add] += bullet
 			bullet.moveToNullspace()
-			qdel(bullet)
 		box.update_ammo_count()
 	return TRUE
 
 /datum/action/rig_module/targeted_ballistic
 	name = "Toggle ballistic annihilation"
 	desc = "Merge before balance checks"
-	var/selected_projtype = null
-	var/selected_projtype_ammo = 0
+	var/selected_caliber = null
+	var/slot_to_target = null
 	var/list/available_firemodes = list(1,3,5)
 	var/firemode = 1
 
@@ -404,27 +394,32 @@
 	//if(!ispAI(user) || !user.stat)
 	//	return NONE
 	rig.wearer.swap_hand()
-	if(selected_projtype)
-		var/ammo_spot = module_handle.ammo_projectiles.Find(selected_projtype,1,0)
-		var/shots_to_handle = firemode
-		while(shots_to_handle)
-			if(!selected_projtype_ammo)
-				shots_to_handle = 0
-				break
-			var/obj/projectile/P = new selected_projtype(rig.wearer)
-			P.starting = rig.wearer.loc
-			P.firer = rig.wearer
-			P.fired_from = rig.wearer
-			P.yo = target.y - rig.wearer.loc.y
-			P.xo = target.x - rig.wearer.loc.x
-			P.original = target
-			P.preparePixelProjectile(target, rig.wearer)
-			INVOKE_ASYNC(P, /obj/projectile.proc/fire)
-			selected_projtype_ammo--
-			module_handle.ammo_amount[ammo_spot]--
-			shots_to_handle--
-		return NONE
+	if(selected_caliber)
+		slot_to_target = ammo_calibers.Find(selected_caliber, 1, 0)
+		if(firemode < 2)
+			handle_projectile_firing(target)
+		else
+			for(var/counter = 1 to firemode)
+				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), fire_rate * counter)
 
+
+
+/datum/action/rig_module/targeted_ballistic/proc/handle_projectile_firing(atom/target)
+	SIGNAL_HANDLER
+	var/bullet = ammo_amount[slot_to_target][1]
+	if(!bullet)
+		return NONE
+	ammo_amount[slot_to_target] -= bullet
+	var/obj/projectile/P = new bullet(rig.wearer)
+	P.starting = rig.wearer.loc
+	P.firer = rig.wearer
+	P.fired_from = rig
+	P.yo = target.y - rig.wearer.loc.y
+	P.xo = target.x - rig.wearer.loc.x
+	P.original = target
+	P.preparePixelProjectile(target, rig.wearer)
+	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
+	return NONE
 
 /datum/action/rig_module/targeted_ballistic/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -441,7 +436,7 @@
 		var/list/bullet_data = list()
 		bullet_data["bullet_count"] = module_handle.ammo_amount[counter]
 		bullet_data["bullet_caliber"] = module_handle.ammo_calibers[counter]
-		if(selected_projtype == module_handle.ammo_projectiles[counter])
+		if(selected_caliber == module_handle.ammo_calibers[counter])
 			bullet_data["bullet_color"] = "green"
 		else
 			bullet_data["bullet_color"] = "blue"
@@ -467,10 +462,7 @@
 	switch(action)
 		if("pick")
 			var/obj/item/rig_module/targeted_ballistic/handle = module
-			var/caliber = params["bulletcaliber"]
-			var/spot = handle.ammo_calibers.Find(caliber,1,0)
-			selected_projtype = handle.ammo_projectiles[spot]
-			selected_projtype_ammo = handle.ammo_amount[spot]
+			var/selected_caliber = handle.ammo_calibers.Find(caliber,1,0)
 		if("pick_firemode")
 			firemode = params["firemode_id"]
 
