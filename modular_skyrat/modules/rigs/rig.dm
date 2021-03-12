@@ -26,6 +26,14 @@
 	var/module_weight_limit = 15
 	/// The sum of all module weights
 	var/module_weight_current = 0
+	/// The heat capacity of this rig , used as a balancing factor against stacked modules , or as a limiter of actions per say
+	var/heat_capacity = 100
+	/// The heat disspipation rate of this rig , how much heat do we lose per fast process
+	var/heat_dissipation = 0.5
+	/// The amount of heat we remove when we overheat
+	var/heat_remove = 10
+	/// The amount of heat we have
+	var/heat_stored = 0
 	/// The required acces
 	req_access = 0
 	/// The owner who may deploy this rigsuit if chosen
@@ -46,8 +54,9 @@
 	var/calculated_power_use = 0
 	/// The amount of power rig uses by itself
 	var/rig_power_use = 25
-	/// The rig suit pieces go here , the list ontop only holds references.
+	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up
 	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy)
+	/// A list holding references to the actions after they were initialized
 	var/list/datum/action/rig_suit/action_storage_rig = list()
 
 /// We add the individual suit components and the wires datum.
@@ -204,6 +213,11 @@
 		unpower_suit()
 		return
 	cell.charge -= calculated_power_use
+	if(heat_stored > 0)
+		heat -= FLOOR(heat_dissipation,heat_stored)
+	if(heat_stored >= heat_capacity)
+		unpower_suit()
+		heat = heat_capacity - heat_remove
 
 /obj/item/rig_suit/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

@@ -334,7 +334,6 @@
 	var/list/ammo_calibers = list(CALIBER_712X82MM,CALIBER_10MM,CALIBER_357)
 	var/list/ammo_amount = list(list(),list(),list())
 	var/list/ammo_capacity = list(100,100,100)
-	var/selected_projtype = null
 	var/fire_rate = 1 SECONDS
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
 
@@ -349,7 +348,7 @@
 		/obj/item/ammo_box
 	))
 
-/obj/item/rig_module/targeted_ballistic/attack(mob/living/M, mob/living/user, params)
+/obj/item/rig_module/targeted_ballistic/attackby(obj/item/I, mob/living/user, params)
 	ammo_calculate()
 	to_chat(user , text = "Storing bullets!")
 	..()
@@ -363,6 +362,7 @@
 				return FALSE
 			var/spot_to_add = ammo_calibers.Find(bullet.caliber,1,0)
 			ammo_amount[spot_to_add] += bullet
+			box.stored_ammo -= bullet
 			bullet.moveToNullspace()
 		box.update_ammo_count()
 	return TRUE
@@ -377,7 +377,7 @@
 
 /datum/action/rig_module/targeted_ballistic/custom_trigger()
 	. = ..()
-	if(!selected_projtype)
+	if(!selected_caliber)
 		return FALSE
 	if(module.active)
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
@@ -395,22 +395,26 @@
 	//	return NONE
 	rig.wearer.swap_hand()
 	if(selected_caliber)
-		slot_to_target = ammo_calibers.Find(selected_caliber, 1, 0)
+		slot_to_target = module_handle.ammo_calibers.Find(selected_caliber, 1, 0)
 		if(firemode < 2)
 			handle_projectile_firing(target)
 		else
-			for(var/counter = 1 to firemode)
-				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), fire_rate * counter)
+			handle_projectile_firing(target)
+			for(var/counter = 1 to firemode-1)
+				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), module_handle.fire_rate * counter)
 
 
 
 /datum/action/rig_module/targeted_ballistic/proc/handle_projectile_firing(atom/target)
 	SIGNAL_HANDLER
-	var/bullet = ammo_amount[slot_to_target][1]
+	var/obj/item/rig_module/targeted_ballistic/module_handle = module
+	var/list/to_acces = module_handle.ammo_amount[slot_to_target]
+	var/obj/projectile/bullet = to_acces[1]
 	if(!bullet)
 		return NONE
-	ammo_amount[slot_to_target] -= bullet
-	var/obj/projectile/P = new bullet(rig.wearer)
+	module_handle.ammo_amount[slot_to_target] -= bullet
+	var/obj/projectile/P = new bullet.projectile_type(rig.wearer)
+	qdel(bullet)
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
 	P.fired_from = rig
@@ -434,7 +438,7 @@
 	var/counter = module_handle.ammo_amount.len
 	while(counter)
 		var/list/bullet_data = list()
-		bullet_data["bullet_count"] = module_handle.ammo_amount[counter]
+		bullet_data["bullet_count"] = module_handle.ammo_amount.len
 		bullet_data["bullet_caliber"] = module_handle.ammo_calibers[counter]
 		if(selected_caliber == module_handle.ammo_calibers[counter])
 			bullet_data["bullet_color"] = "green"
@@ -461,8 +465,7 @@
 		return
 	switch(action)
 		if("pick")
-			var/obj/item/rig_module/targeted_ballistic/handle = module
-			var/selected_caliber = handle.ammo_calibers.Find(caliber,1,0)
+			selected_caliber = params["bulletcaliber"]
 		if("pick_firemode")
 			firemode = params["firemode_id"]
 
