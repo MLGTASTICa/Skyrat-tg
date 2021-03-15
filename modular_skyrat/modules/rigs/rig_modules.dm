@@ -27,8 +27,10 @@
 	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
 	var/fried = FALSE
-	/// Under PAI control at this moment?
+	/// Can be PAI cntrolled?
 	var/PAI_control = FALSE
+	/// is the Pai currently coltrolling this?
+	var/PAI_active = FALSE
 	/// Eee
 	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
 	/// This is the action storage, adding actions is handled in the item initialize
@@ -92,11 +94,8 @@
 
 /// So we can freely parent call this proc for all the checks AND not have to deal with the trigger runtimes afterwards from the other parents
 /datum/action/rig_module/Trigger()
-	custom_trigger()
-
-/datum/action/rig_module/proc/custom_trigger()
 	var/obj/item/clothing/rig_suit_holder/holder = rig.suit_pieces[linked_to]
-	if(holder.deployed == FALSE)
+	if(!(holder.deployed))
 		to_chat(rig.wearer, text = "The module tries to do its act , but the suit pieces its linked to is not deployed!")
 		return FALSE
 	if(!rig.powered)
@@ -108,9 +107,11 @@
 	if(module.fried)
 		to_chat(rig.wearer, text = "You try to active the module , but it stops with a sharp electric buzz!")
 		return FALSE
+	custom_trigger()
+
+/datum/action/rig_module/proc/custom_trigger()
 	to_chat(rig.wearer, text = "Module activated succesfully")
 	module.cooldown_timer = world.time + module.cooldown
-
 
 /obj/item/rig_module/reagent
 	name = "Combat injector module"
@@ -190,6 +191,7 @@
 	name = "Targetting system"
 	desc = "The missile knows where it is by knowing where it isn't"
 	actions_to_add = list(/datum/action/rig_module/targeted)
+	var/spread = 1
 
 /datum/action/rig_module/targeted
 	name = "Toggle a targeted ability"
@@ -289,13 +291,13 @@
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
 		module.active = FALSE
-		background_icon_state = "rig_bg_active"
+		button.icon_state = "rig_bg_default"
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
 		module.active = TRUE
-		background_icon_state = "rig_bg_default"
-	UpdateButtonIcon(FALSE, TRUE)
+		button.icon_state = "rig_bg_active"
+	button.update_appearance()
 	to_chat(rig.wearer, text = "We tried 3 ")
 
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
@@ -316,6 +318,7 @@
 
 /datum/action/rig_module/targeted/proc/handle_projectile_firing(atom/target)
 	SIGNAL_HANDLER
+	var/obj/item/rig_module/targeted/module_handle = module
 	var/obj/projectile/P = new selected_projtype(rig.wearer)
 	P.starting = rig.wearer.loc
 	P.firer = rig.wearer
@@ -323,7 +326,7 @@
 	P.yo = target.y - rig.wearer.loc.y
 	P.xo = target.x - rig.wearer.loc.x
 	P.original = target
-	P.preparePixelProjectile(target, rig.wearer)
+	P.preparePixelProjectile(target, rig.wearer, spread = module_handle.spread)
 	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 	return NONE
 
@@ -335,6 +338,7 @@
 	var/list/ammo_amount = list(list(),list(),list())
 	var/list/ammo_capacity = list(100,100,100)
 	var/fire_rate = 1 SECONDS
+	var/spread = 1
 	actions_to_add = list(/datum/action/rig_module/targeted_ballistic)
 
 /obj/item/rig_module/targeted_ballistic/ComponentInitialize()
@@ -349,8 +353,7 @@
 	))
 
 /obj/item/rig_module/targeted_ballistic/attackby(obj/item/I, mob/living/user, params)
-	ammo_calculate()
-	to_chat(user , text = "Storing bullets!")
+	addtimer(CALLBACK(src,.proc/ammo_calculate), 1 SECONDS)
 	..()
 
 /obj/item/rig_module/targeted_ballistic/proc/ammo_calculate()
@@ -409,9 +412,9 @@
 	SIGNAL_HANDLER
 	var/obj/item/rig_module/targeted_ballistic/module_handle = module
 	var/list/to_acces = module_handle.ammo_amount[slot_to_target]
+	if(!to_acces.len)
+		return FALSE
 	var/obj/projectile/bullet = to_acces[1]
-	if(!bullet)
-		return NONE
 	module_handle.ammo_amount[slot_to_target] -= bullet
 	var/obj/projectile/P = new bullet.projectile_type(rig.wearer)
 	qdel(bullet)
@@ -421,7 +424,7 @@
 	P.yo = target.y - rig.wearer.loc.y
 	P.xo = target.x - rig.wearer.loc.x
 	P.original = target
-	P.preparePixelProjectile(target, rig.wearer)
+	P.preparePixelProjectile(target, rig.wearer, spread = module_handle.spread)
 	INVOKE_ASYNC(P, /obj/projectile.proc/fire)
 	return NONE
 
@@ -438,7 +441,7 @@
 	var/counter = module_handle.ammo_amount.len
 	while(counter)
 		var/list/bullet_data = list()
-		bullet_data["bullet_count"] = module_handle.ammo_amount.len
+		bullet_data["bullet_count"] = module_handle.ammo_amount[counter].len
 		bullet_data["bullet_caliber"] = module_handle.ammo_calibers[counter]
 		if(selected_caliber == module_handle.ammo_calibers[counter])
 			bullet_data["bullet_color"] = "green"
@@ -475,26 +478,37 @@
 /obj/item/rig_module/tool_deploy
 	name = "XS-7 Tactical analyzing module"
 	desc = "What do the numbers mean"
+	var/list/tools = list(/obj/item/analyzer)
+	var/single = FALSE // Used to determine wheter we allow a UI act for this , since we can have multiple or just 1 tool. Changed in initialize.
 	actions_to_add = list(/datum/action/rig_module/deploy_tool)
+	active = FALSE
+
+/obj/item/rig_module/tool_deploy/Initialize()
+	. = ..()
+	var/counter = tools.len
+	while(counter)
+		tools[counter] = new tools[counter]
+		tools[counter].moveToNullspace()
+		counter--
+	if(tools.len < 2)
+		var/datum/action/rig_module/deploy_tool/handle = actions.Find(actions_to_add[1])
+		handle = actions[handle]
+		handle.tool_reference = tools[1]
+		single = TRUE
+
 /datum/action/rig_module/deploy_tool
 	name = "Deploy a tool"
 	desc = "Deploys a tol"
-	var/tool_to_deploy = /obj/item/analyzer
-	var/active = FALSE
 	var/obj/item/tool_reference = null
 
 /datum/action/rig_module/deploy_tool/custom_trigger()
 	. = ..()
-	if(!active)
-		if(!tool_reference)
-			var/obj/item/item_to_place = new tool_to_deploy(src)
-			ADD_TRAIT(item_to_place, TRAIT_NODROP, "RIG Module")
-			tool_reference = item_to_place
-		active = TRUE
+	if(!(module.active))
+		module.active = TRUE
 		rig.wearer.put_in_hands(tool_reference)
 	else
 		tool_reference.moveToNullspace()
-		active = FALSE
+		module.active = FALSE
 
 /*
 Laser Modules!
@@ -517,7 +531,7 @@ Laser Modules!
 	name = "All-star C5 Laser module"
 	desc = "A very compact module installed with a a low performance laser"
 	actions_to_add = list(/datum/action/rig_module/targeted/laser_weak)
-	cooldown = 1  SECONDS * 1.25
+	cooldown = 1 SECONDS * 1.25
 
 /datum/action/rig_module/targeted/laser_weak
 	name = "Toggle All-star C5 carbine module"
@@ -531,13 +545,17 @@ Laser Modules!
 	name = "KER-6 Disabler module"
 	desc = "A experimental disabler laser minigun."
 	cooldown = 1 SECONDS * 0.25
+	spread = 2
+
 /datum/action/rig_module/targeted/disabler
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
 	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
 	emag_projectiles = list(/obj/projectile/beam/laser, "Laser")
-	normal_firecost = 150
-	emagged_firecost = 250
+	normal_firecost = 75
+	emagged_firecost = 150
+	firemodes = list(5,10,15,20,25,30)
+	normal_firecost = 75
 /*
 Ballistic modules
 */

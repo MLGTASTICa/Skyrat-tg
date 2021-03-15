@@ -1,13 +1,13 @@
 import { useBackend } from '../backend';
-import { Button, LabeledList, Section } from '../components';
+import { Button, LabeledList, Section, ProgressBar} from '../components';
 import { Window } from '../layouts';
 
 export const RIGSuit = (props, context) => {
   const { act, data } = useBackend(context);
   // Extract `health` and `color` variables from the `data` object.
   const {
+    suit_status,
     cell,
-    cellcharge,
     power_use,
     module_count,
     maximum_modules,
@@ -23,17 +23,27 @@ export const RIGSuit = (props, context) => {
       <Window.Content scrollable>
         <Section title="RIG Statistics">
           <LabeledList>
-            <LabeledList.Item label="Current cell">
-              {cell}
+            <LabeledList.Item label="Suit status">
+              <Button
+                content={suit_status.text}
+                color = {suit_status.color}
+                onClick={() => act('power_toggle')}
+              />
             </LabeledList.Item>
             <LabeledList.Item label="Current cell charge">
-              {cellcharge}
+              <ProgressBar
+                value={cell.charge}
+                minValue={0}
+                maxValue={cell.max_charge}
+                ranges={{
+                  good: [cell.max_charge * 0.75, Infinity],
+                  average: [cell.max_charge * 0.74, cell.max_charge * 0.35],
+                  bad: [cell.max_charge * 0.34, 0],
+                }}
+              />
             </LabeledList.Item>
             <LabeledList.Item label="Current power usage">
               {power_use}
-            </LabeledList.Item>
-            <LabeledList.Item label="Installed modules count">
-              {module_count}
             </LabeledList.Item>
             <LabeledList.Item label="Maximum modules count">
               {maximum_modules}
@@ -53,9 +63,6 @@ export const RIGSuit = (props, context) => {
             <Button
               content="Unpower the suit"
               onClick={() => act('unpower')} />
-            <Button
-              content="Eject a module"
-              onClick={() => act('eject_module')} />
             <Button
               content="Become the owner"
               onClick={() => act('become_owner')} />
@@ -83,6 +90,11 @@ export const RIGSuit = (props, context) => {
                     <Button
                       content="Configure"
                       onClick={() => act('configure_specific_module', {
+                      identifier: module.id,
+                    })} />
+                    <Button
+                      content="Allow PAI Control"
+                      onClick={() => act('give_pai_acces', {
                       identifier: module.id,
                     })} />
                   </>

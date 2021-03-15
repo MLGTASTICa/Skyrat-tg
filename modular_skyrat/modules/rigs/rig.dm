@@ -55,7 +55,7 @@
 	/// The amount of power rig uses by itself
 	var/rig_power_use = 25
 	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up
-	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy)
+	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy, /datum/action/rig_suit/open_ui)
 	/// A list holding references to the actions after they were initialized
 	var/list/datum/action/rig_suit/action_storage_rig = list()
 
@@ -90,7 +90,8 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		action_storage_rig[1].Grant(wearer)
+		var/slot_to_target = action_storage_rig.Find(/datum/action/rig_suit/deploy_undeploy, 1, 0)
+		action_storage_rig[slot_to_target].Grant(wearer)
 
 /obj/item/rig_suit/dropped(mob/user, silent)
 	. = ..()
@@ -99,8 +100,20 @@
 
 /datum/action/rig_suit
 	name = "Deploy RIG"
+	check_flags = AB_CHECK_CONSCIOUS
+	button_icon = 'modular_skyrat/modules/rigs/icons/rig_actions.dmi'
+	background_icon_state = "rig_bg_default"
+	icon_icon = 'modular_skyrat/modules/rigs/icons/rig_actions.dmi'
+	button_icon_state = "rig_deploy"
 	var/obj/item/rig_suit/rig
 	var/mob/living/wearer
+
+/datum/action/rig_suit/open_ui
+	name = "Open RIG UI"
+	button_icon_state = "rig_ui_acces"
+
+/datum/action/rig_suit/open_ui/Trigger()
+	rig.ui_interact(wearer)
 
 /// Links it properly , DO NOT FUCKING use this when the rig is not being WORN, it will FUCK UP.
 /datum/action/rig_suit/link_to(Target)
@@ -109,10 +122,21 @@
 	wearer = rig.wearer
 /datum/action/rig_suit/deploy_undeploy
 	name = "Deploy RIG"
+	button_icon_state = "rig_deploy"
 
 /// Same as below desc
 /datum/action/rig_suit/deploy_undeploy/Trigger()
 	rig.deploy_undeploy()
+	if(!(rig.deployed))
+		button_icon_state = "rig_deploy"
+		name = "Deploy RIG"
+		button.icon_state = "rig_bg_default"
+	else
+		button_icon_state = "rig_undeploy"
+		name = "Undeploy RIG"
+		button_icon_state = "rig_bg_active"
+	UpdateButtonIcon(FALSE, TRUE)
+	button.update_appearance()
 
 /// The datum for undeploying , we remove it from displaying on use and replace it with the deploy one , or make a new deploy one if it magically disspears
 
@@ -131,14 +155,23 @@
 			return FALSE
 		ADD_TRAIT(src, TRAIT_NODROP, src)
 		to_chat(wearer,text = "Deploying rig")
+		for(var/obj/item/clothing/rig_suit_holder in suit_pieces)
+			rig_suit_holder.slowdown = 0
 		wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
 		wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
 		wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
 		wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
 		deployed = TRUE
+		for(var/datum/action/rig_suit/action_to_add in action_storage_rig)
+			to_chat(wearer, text = "Tried to apply the action [action_to_add]")
+			if(action_to_add != action_storage_rig[1])
+				action_to_add.Grant(wearer)
 		power_suit()
 		return TRUE
 	else
+		for(var/datum/action/rig_suit/action_to_remove in action_storage_rig)
+			if(action_to_remove != action_storage_rig[1])
+				action_to_remove.Remove(wearer)
 		deployed = FALSE
 		powered = FALSE
 		REMOVE_TRAIT(src, TRAIT_NODROP, src)
@@ -213,11 +246,7 @@
 		unpower_suit()
 		return
 	cell.charge -= calculated_power_use
-	if(heat_stored > 0)
-		heat -= FLOOR(heat_dissipation,heat_stored)
-	if(heat_stored >= heat_capacity)
-		unpower_suit()
-		heat = heat_capacity - heat_remove
+	heat_stored -= FLOOR(heat_dissipation,heat_stored)
 
 /obj/item/rig_suit/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -227,14 +256,24 @@
 
 /obj/item/rig_suit/ui_data(mob/user)
 	var/list/data = list()
-	data["cell"] = cell
-	data["cellcharge"] = cell.charge
 	data["power_use"] = calculated_power_use
 	data["module_count"] = modules.len
 	data["maximum_modules"] = module_limit
 	data["maximum_modules_weight"] = module_weight_limit
 	data["module_weight"] = module_weight_current
 	data["ai"] = AI
+	var/list/cell_stuff = list()
+	cell_stuff["charge"] = cell.charge
+	cell_stuff["max_charge"] = cell.maxcharge
+	data["cell"] += list(cell_stuff)
+	var/list/suit_stuff = list()
+	suit_stuff["status"] = powered
+	suit_stuff["text"] = powered ? "Power suit" : "Unpower suit"
+	if(powered)
+		suit_stuff["color"] = "green"
+	else
+		suit_stuff["color"] = "red"
+	data["suit_status"] += list(suit_stuff)
 	var/special_counter = 0
 	for(var/obj/item/rig_module/module in modules)
 		var/list/handle = list()
@@ -250,18 +289,13 @@
 	if(.)
 		return
 	switch(action)
-		if("power")
-			to_chat(wearer, text = "Powering suit")
-			power_suit()
-		if("unpower")
-			to_chat(wearer, text= "Powering down suit")
-			unpower_suit()
-		if("eject_module")
-			if(modules)
-				var/obj/item/rig_module/fugitive = pick(modules)
-				fugitive.forceMove(wearer.loc)
-				modules -= fugitive
-				fugitive.remove_ability(src)
+		if("power_toggle")
+			if(!powered)
+				to_chat(wearer, text = "Powering suit")
+				power_suit()
+			else
+				to_chat(wearer, text= "Powering down suit")
+				unpower_suit()
 		if("become_owner")
 			owner_suit = wearer
 		if("purge_owner")
@@ -284,8 +318,13 @@
 			to_chat(wearer, text = "Module is [module]")
 			modules -= modules[id]
 			module.forceMove(wearer.loc)
+			module.remove_ability(src)
 		if("configure_specific_module")
 			var/id = params["identifier"]
 			var/obj/item/rig_module/module = modules[id]
 			module.action_storage[1].ui_interact(wearer)
+		if("give_pai_acces")
+			var/id = params["identifier"]
+			var/obj/item/rig_module/module = modules[id]
+			module.PAI_control = TRUE
 

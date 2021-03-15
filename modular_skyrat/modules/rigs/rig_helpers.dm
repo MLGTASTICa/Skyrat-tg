@@ -53,6 +53,8 @@
 	for(var/obj/item/rig_module/item in modules)
 		item.remove_ability(src)
 	powered = 0
+	for(var/obj/item/clothing/rig_suit_holder in suit_pieces)
+		rig_suit_holder.slowdown = 0.25
 	STOP_PROCESSING(SSfastprocess,src)
 
 /obj/item/rig_suit/proc/handle_module_insertion(obj/item/rig_module/module, mob/inserter)
