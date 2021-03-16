@@ -15,7 +15,7 @@
 	var/gloves = /obj/item/clothing/gloves/rig_suit
 	var/boots = /obj/item/clothing/shoes/rig_suit
 	/// The AI this rig is currently hosting if any
-	var/mob/living/AI
+	var/mob/living/ai
 	/// If the AI can use its linked abilities
 	var/AIcontrol = FALSE
 	/// The modules that this rig currently has installed
@@ -73,6 +73,25 @@
 		var/datum/action/rig_suit/handle = new to_add(src)
 		action_storage_rig.Add(handle)
 		special_counter--
+
+/obj/item/rig_suit/Destroy() /// Get rid of all references to avoid hard dels
+	var/counter = suit_pieces.len
+	while(counter)
+		suit_pieces[counter] = null
+		counter--
+	counter = action_storage_rig.len
+	while(counter)
+		action_storage_rig[counter] = null
+		counter--
+	counter = modules.len
+	while(counter)
+		modules[counter] = null
+		counter--
+	cell = null
+	ai = null
+	owner_suit = null
+	wearer = null
+	..()
 
 //***
 ///obj/item/rig_suit/New()
