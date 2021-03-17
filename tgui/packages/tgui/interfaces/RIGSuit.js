@@ -27,10 +27,9 @@ export const RIGSuit = (props, context) => {
               <Flex.Item>
                 <LabeledList.Item label="Suit status">
                   <Button
-                    content={suit_status.text}
+                    content={"Debug"}
                     color = {suit_status.color}
-                    onClick={() => act('power_toggle')}
-                  />
+                    onClick={() => act('power_toggle')} />
                 </LabeledList.Item>
               </Flex.Item>
               <Flex.Item>
@@ -40,11 +39,11 @@ export const RIGSuit = (props, context) => {
                     minValue={0}
                     maxValue={cell.max_charge}
                     ranges={{
-                      good: [cell.max_charge * 0.75, cell.max_charge],
+                      good: [cell.max_charge, cell.max_charge * 0.75],
                       average: [cell.max_charge * 0.74, cell.max_charge * 0.35],
                       bad: [cell.max_charge * 0.34, 0],
-                    }}
-                  />
+                    }}>
+                  </ProgressBar>
                 </LabeledList.Item>
               </Flex.Item>
             </Flex>
