@@ -15,7 +15,7 @@
 	var/gloves = /obj/item/clothing/gloves/rig_suit
 	var/boots = /obj/item/clothing/shoes/rig_suit
 	/// The AI this rig is currently hosting if any
-	var/mob/living/ai
+	var/mob/living/AI
 	/// If the AI can use its linked abilities
 	var/AIcontrol = FALSE
 	/// The modules that this rig currently has installed
@@ -88,7 +88,7 @@
 		modules[counter] = null
 		counter--
 	cell = null
-	ai = null
+	AI = null
 	owner_suit = null
 	wearer = null
 	..()
@@ -265,7 +265,11 @@
 		unpower_suit()
 		return
 	cell.charge -= calculated_power_use
-	heat_stored -= FLOOR(heat_dissipation,heat_stored)
+	if(heat_stored)
+		heat_stored -= heat_dissipation
+	if(heat_stored > heat_capacity)
+		heat_stored = heat_capacity - heat_protection
+		unpower_suit()
 
 /obj/item/rig_suit/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
