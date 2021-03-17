@@ -7,7 +7,7 @@ export const RIGSuit = (props, context) => {
   // Extract `health` and `color` variables from the `data` object.
   const {
     suit_status,
-    cell,
+    cell = data.cell_data || [],
     power_use,
     module_count,
     maximum_modules,

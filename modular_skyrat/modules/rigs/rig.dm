@@ -288,9 +288,8 @@
 	var/list/cell_stuff = list()
 	cell_stuff["charge"] = cell.charge
 	cell_stuff["max_charge"] = cell.maxcharge
-	data["cell"] += list(cell_stuff)
+	data["cell_data"] += list(cell_stuff)
 	var/list/suit_stuff = list()
-	suit_stuff["status"] = powered
 	suit_stuff["text"] = powered ? "Power suit" : "Unpower suit"
 	if(powered)
 		suit_stuff["color"] = "green"

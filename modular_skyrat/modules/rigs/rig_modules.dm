@@ -245,7 +245,7 @@
 	special_counter = firemodes.len
 	while(special_counter)
 		var/list/firemode_handle = list()
-		firemode_handle["shots"] = special_counter
+		firemode_handle["shots"] = firemodes[special_counter]
 		if(firemode == firemodes[special_counter])
 			firemode_handle["color"] = "green"
 		else
@@ -487,8 +487,9 @@
 	. = ..()
 	var/counter = tools.len
 	while(counter)
-		tools[counter] = new tools[counter]
-		tools[counter].moveToNullspace()
+		var/obj/item/replacement = new tools[counter]
+		replacement.moveToNullspace()
+		tools[counter] = replacement
 		counter--
 	if(tools.len < 2)
 		var/datum/action/rig_module/deploy_tool/handle = actions.Find(actions_to_add[1])
