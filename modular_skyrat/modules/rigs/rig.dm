@@ -54,6 +54,8 @@
 	var/calculated_power_use = 0
 	/// The amount of power rig uses by itself
 	var/rig_power_use = 25
+	/// The spot holding the deploy undeploy action , it has to be done this way because byond can't find datums ..
+	var/deploy_slot = null
 	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up
 	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy, /datum/action/rig_suit/open_ui)
 	/// A list holding references to the actions after they were initialized
@@ -71,6 +73,8 @@
 	while(special_counter>0)
 		var/datum/action/rig_suit/to_add = actions_to_add_rig[special_counter]
 		var/datum/action/rig_suit/handle = new to_add(src)
+		if(to_add == actions_to_add_rig[1])
+			deploy_slot = actions_to_add_rig.len + 1 - special_counter
 		action_storage_rig.Add(handle)
 		special_counter--
 
@@ -109,13 +113,12 @@
 	. = ..()
 	if(slot == ITEM_SLOT_BACK)
 		wearer = owner
-		var/slot_to_target = action_storage_rig.Find(/datum/action/rig_suit/deploy_undeploy, 1, 0)
-		action_storage_rig[slot_to_target].Grant(wearer)
+		action_storage_rig[deploy_slot].Grant(wearer)
 
 /obj/item/rig_suit/dropped(mob/user, silent)
 	. = ..()
 	wearer = null
-	action_storage_rig[1].Remove(user)
+	action_storage_rig[deploy_slot].Remove(user)
 
 /datum/action/rig_suit
 	name = "Deploy RIG"
@@ -125,20 +128,18 @@
 	icon_icon = 'modular_skyrat/modules/rigs/icons/rig_actions.dmi'
 	button_icon_state = "rig_deploy"
 	var/obj/item/rig_suit/rig
-	var/mob/living/wearer
 
 /datum/action/rig_suit/open_ui
 	name = "Open RIG UI"
 	button_icon_state = "rig_ui_acces"
 
 /datum/action/rig_suit/open_ui/Trigger()
-	rig.ui_interact(wearer)
+	rig.ui_interact(rig.wearer)
 
 /// Links it properly , DO NOT FUCKING use this when the rig is not being WORN, it will FUCK UP.
 /datum/action/rig_suit/link_to(Target)
 	. = ..()
 	rig = target
-	wearer = rig.wearer
 /datum/action/rig_suit/deploy_undeploy
 	name = "Deploy RIG"
 	button_icon_state = "rig_deploy"
@@ -182,14 +183,13 @@
 		wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
 		deployed = TRUE
 		for(var/datum/action/rig_suit/action_to_add in action_storage_rig)
-			to_chat(wearer, text = "Tried to apply the action [action_to_add]")
-			if(action_to_add != action_storage_rig[1])
+			if(action_to_add != action_storage_rig[deploy_slot])
 				action_to_add.Grant(wearer)
 		power_suit()
 		return TRUE
 	else
 		for(var/datum/action/rig_suit/action_to_remove in action_storage_rig)
-			if(action_to_remove != action_storage_rig[1])
+			if(action_to_remove != action_storage_rig[deploy_slot])
 				action_to_remove.Remove(wearer)
 		deployed = FALSE
 		powered = FALSE

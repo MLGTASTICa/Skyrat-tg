@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Button, LabeledList, Section, ProgressBar} from '../components';
+import { Button, LabeledList, Section, ProgressBar, Flex} from '../components';
 import { Window } from '../layouts';
 
 export const RIGSuit = (props, context) => {
@@ -23,25 +23,31 @@ export const RIGSuit = (props, context) => {
       <Window.Content scrollable>
         <Section title="RIG Statistics">
           <LabeledList>
-            <LabeledList.Item label="Suit status">
-              <Button
-                content={suit_status.text}
-                color = {suit_status.color}
-                onClick={() => act('power_toggle')}
-              />
-            </LabeledList.Item>
-            <LabeledList.Item label="Current cell charge">
-              <ProgressBar
-                value={cell.charge}
-                minValue={0}
-                maxValue={cell.max_charge}
-                ranges={{
-                  good: [cell.max_charge * 0.75, Infinity],
-                  average: [cell.max_charge * 0.74, cell.max_charge * 0.35],
-                  bad: [cell.max_charge * 0.34, 0],
-                }}
-              />
-            </LabeledList.Item>
+            <Flex>
+              <Flex.Item>
+                <LabeledList.Item label="Suit status">
+                  <Button
+                    content={suit_status.text}
+                    color = {suit_status.color}
+                    onClick={() => act('power_toggle')}
+                  />
+                </LabeledList.Item>
+              </Flex.Item>
+              <Flex.Item>
+                <LabeledList.Item label="Current cell charge">
+                  <ProgressBar
+                    value={cell.charge}
+                    minValue={0}
+                    maxValue={cell.max_charge}
+                    ranges={{
+                      good: [cell.max_charge * 0.75, cell.max_charge],
+                      average: [cell.max_charge * 0.74, cell.max_charge * 0.35],
+                      bad: [cell.max_charge * 0.34, 0],
+                    }}
+                  />
+                </LabeledList.Item>
+              </Flex.Item>
+            </Flex>
             <LabeledList.Item label="Current power usage">
               {power_use}
             </LabeledList.Item>
