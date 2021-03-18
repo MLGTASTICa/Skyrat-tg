@@ -5,17 +5,9 @@ import { Window } from '../layouts';
 export const RIGSuit = (props, context) => {
   const { act, data } = useBackend(context);
   // Extract `health` and `color` variables from the `data` object.
-  const {
-    suit_status,
-    cell = data.cell_data || [],
-    power_use,
-    module_count,
-    maximum_modules,
-    maximum_modules_weight,
-    module_weight,
-    ai,
-    modules = data.module_data || [],
-  } = data;
+  let modules = [
+    ...data.module_data,
+  ];
   return (
     <Window
       width = {300}
@@ -28,39 +20,37 @@ export const RIGSuit = (props, context) => {
                 <LabeledList.Item label="Suit status">
                   <Button
                     content={"Debug"}
-                    color = {suit_status.color}
                     onClick={() => act('power_toggle')} />
                 </LabeledList.Item>
               </Flex.Item>
               <Flex.Item>
                 <LabeledList.Item label="Current cell charge">
-                  <ProgressBar
-                    value={cell.charge}
-                    minValue={0}
-                    maxValue={cell.max_charge}
-                    ranges={{
-                      good: [cell.max_charge, cell.max_charge * 0.75],
-                      average: [cell.max_charge * 0.74, cell.max_charge * 0.35],
-                      bad: [cell.max_charge * 0.34, 0],
-                    }}>
-                  </ProgressBar>
+                  {data.cell && (
+                    <ProgressBar
+                      value={data.percentage / 100}
+                      content ={data.charge}
+                      ranges={{
+                        good: [0.6, Infinity],
+                        average: [0.3, 0.6],
+                        bad: [-Infinity, 0.3],
+                    }}/> ) || 'None'}
                 </LabeledList.Item>
               </Flex.Item>
             </Flex>
             <LabeledList.Item label="Current power usage">
-              {power_use}
+              {data.power_use}
             </LabeledList.Item>
             <LabeledList.Item label="Maximum modules count">
-              {maximum_modules}
+              {data.maximum_modules}
             </LabeledList.Item>
             <LabeledList.Item label="Current module weight">
-              {module_weight}
+              {data.module_weight}
             </LabeledList.Item>
             <LabeledList.Item label="Maximum module weight">
-              {maximum_modules_weight}
+              {data.maximum_modules_weight}
             </LabeledList.Item>
             <LabeledList.Item label="Current AI">
-              {ai}
+              {data.ai}
             </LabeledList.Item>
             <Button
               content="Power the suit"

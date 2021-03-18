@@ -49,7 +49,7 @@
 	/// Are we deployed on the user currently?
 	var/deployed = FALSE
 	/// The refence for the cell
-	var/obj/item/stock_parts/cell/cell
+	var/obj/item/stock_parts/cell/cell = null
 	/// The amount of power we use per process , calculated!
 	var/calculated_power_use = 0
 	/// The amount of power rig uses by itself
@@ -285,24 +285,17 @@
 	data["maximum_modules_weight"] = module_weight_limit
 	data["module_weight"] = module_weight_current
 	data["ai"] = AI
-	var/list/cell_stuff = list()
-	cell_stuff["charge"] = cell.charge
-	cell_stuff["max_charge"] = cell.maxcharge
-	data["cell_data"] += list(cell_stuff)
-	var/list/suit_stuff = list()
-	suit_stuff["text"] = powered ? "Power suit" : "Unpower suit"
-	if(powered)
-		suit_stuff["color"] = "green"
-	else
-		suit_stuff["color"] = "red"
-	data["suit_status"] += list(suit_stuff)
+	data["charge"] = cell?.charge
+	data["percentage"] = cell ? round(cell.percent(), 1) : 0
+	data["max_charge"] = cell?.maxcharge
+	data["powered"] = powered
 	var/special_counter = 0
 	for(var/obj/item/rig_module/module in modules)
 		var/list/handle = list()
 		special_counter++
 		handle["id"] = special_counter
 		handle["name"] = module.name
-		data["modules"] += list(handle)
+		data["module_data"] += list(handle)
 
 	return data
 
