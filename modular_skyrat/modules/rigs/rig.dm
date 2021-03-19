@@ -285,6 +285,7 @@
 	data["maximum_modules_weight"] = module_weight_limit
 	data["module_weight"] = module_weight_current
 	data["ai"] = AI
+	data["cell"] = cell ? TRUE : FALSE
 	data["charge"] = cell?.charge
 	data["percentage"] = cell ? round(cell.percent(), 1) : 0
 	data["max_charge"] = cell?.maxcharge
@@ -311,15 +312,19 @@
 			else
 				to_chat(wearer, text= "Powering down suit")
 				unpower_suit()
-		if("become_owner")
+		if("toggle_owner")
+			if(owner_suit)
+				owner_suit = null
+				return TRUE
 			owner_suit = wearer
-		if("purge_owner")
-			owner_suit = null
-		if("lock_to_id")
+		if("toggle_id")
+			if(req_access)
+				req_access = 0
+				return TRUE
 			var/obj/item/id = wearer.get_idcard()
-			req_access = id.GetAccess()
-		if("purge_acces")
-			req_access = null
+			if(id)
+				req_access = id.GetAccess()
+				return TRUE
 		if("toggle_lock")
 			if(locked)
 				to_chat(wearer, text = "RIG Unlocked")

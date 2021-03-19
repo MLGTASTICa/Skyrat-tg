@@ -48,6 +48,9 @@
 		return FALSE
 	for(var/obj/item/rig_module/item in modules)
 		item.add_ability(src)
+	for(var/obj/item/clothing/rig_suit_holder in suit_pieces)
+		rig_suit_holder.slowdown = 0
+	wearer.update_movespeed()
 
 /obj/item/rig_suit/proc/unpower_suit()
 	for(var/obj/item/rig_module/item in modules)
@@ -56,6 +59,7 @@
 	for(var/obj/item/clothing/rig_suit_holder in suit_pieces)
 		rig_suit_holder.slowdown = 0.25
 	STOP_PROCESSING(SSfastprocess,src)
+	wearer.update_movespeed()
 
 /obj/item/rig_suit/proc/handle_module_insertion(obj/item/rig_module/module, mob/inserter)
 	if(modules.len >= module_limit)
@@ -76,5 +80,4 @@
 // This things only purpose is to allow me to easily acces the deployed var
 /obj/item/clothing/rig_suit_holder
 	var/deployed = FALSE
-
 

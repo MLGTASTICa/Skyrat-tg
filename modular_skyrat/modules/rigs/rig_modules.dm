@@ -58,6 +58,10 @@
 /obj/item/rig_module/proc/remove_ability(obj/item/rig_suit/target)
 	for(var/datum/action/rig_module/action_remove in action_storage)
 		action_remove.Remove(target.wearer)
+		action_remove.HandleRemoval(target.wearer)
+
+/datum/action/rig_module/proc/HandleRemoval(mob/living/user)
+	return FALSE
 
 /obj/item/rig_module/emag_act(mob/user, obj/item/card/emag/E)
 	. = ..()
@@ -246,6 +250,7 @@
 	while(special_counter)
 		var/list/firemode_handle = list()
 		firemode_handle["shots"] = firemodes[special_counter]
+		firemode_handle["firemode_ident"] = special_counter
 		if(firemode == firemodes[special_counter])
 			firemode_handle["color"] = "green"
 		else
@@ -291,14 +296,22 @@
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
 		module.active = FALSE
-		button.icon_state = "rig_bg_default"
+		background_icon_state = "rig_bg_default"
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
 		module.active = TRUE
-		button.icon_state = "rig_bg_active"
-	button.update_appearance()
+		background_icon_state = "rig_bg_active"
+	UpdateButtonIcon()
 	to_chat(rig.wearer, text = "We tried 3 ")
+
+/datum/action/rig_module/targeted/HandleRemoval(user)
+	if(module.active)
+		UnregisterSignal(user, COMSIG_MOB_MIDDLECLICKON)
+		module.active = FALSE
+		background_icon_state = "rig_bg_default"
+		name = "Toggle targetting off"
+		UpdateButtonIcon()
 
 /datum/action/rig_module/targeted/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
@@ -386,10 +399,21 @@
 		UnregisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON)
 		name = "Toggle targetting on"
 		module.active = FALSE
+		background_icon_state = "rig_bg_default"
 	else
 		RegisterSignal(rig.wearer, COMSIG_MOB_MIDDLECLICKON, .proc/on_middle_click_rig)
 		name = "Toggle targetting off"
 		module.active = TRUE
+		background_icon_state = "rig_bg_active"
+	UpdateButtonIcon()
+
+/datum/action/rig_module/targeted_ballistic/HandleRemoval(user)
+	if(module.active)
+		UnregisterSignal(user, COMSIG_MOB_MIDDLECLICKON)
+		module.active = FALSE
+		background_icon_state = "rig_bg_default"
+		name = "Toggle targetting off"
+		UpdateButtonIcon()
 
 /datum/action/rig_module/targeted_ballistic/proc/on_middle_click_rig(mob/user, atom/target)
 	SIGNAL_HANDLER
@@ -405,8 +429,6 @@
 			handle_projectile_firing(target)
 			for(var/counter = 1 to firemode-1)
 				addtimer(CALLBACK(src, .proc/handle_projectile_firing, target), module_handle.fire_rate * counter)
-
-
 
 /datum/action/rig_module/targeted_ballistic/proc/handle_projectile_firing(atom/target)
 	SIGNAL_HANDLER

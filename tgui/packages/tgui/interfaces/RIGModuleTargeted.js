@@ -34,7 +34,7 @@ export const RIGModuleTargeted = (props, context) => {
                   key = {firemode.shots}
                   content = {firemode.shots}
                   onClick={() => act('pick_firemode', {
-                  firemode_id: firemode.shots
+                  firemode_id: firemode.ident
                 })} />
               ))}
             </LabeledList.Item>
