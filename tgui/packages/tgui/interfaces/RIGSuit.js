@@ -7,6 +7,16 @@ export const RIGSuit = (props, context) => {
   // Extract `health` and `color` variables from the `data` object.
   const {
     module_data,
+    percentage,
+    powered,
+    power_use,
+    maximum_modules,
+    module_weight,
+    maximum_modules_weight,
+    cell,
+    owner,
+    lock,
+    id,
   } = data;
   return (
     <Window
@@ -17,13 +27,13 @@ export const RIGSuit = (props, context) => {
           <Flex>
             <Button
               icon="power-off"
-              color={data.powered ? 'red' : 'green'}
-              content={data.powered ? 'Unpower' : 'Power'}
+              color={powered ? 'red' : 'green'}
+              content={powered ? 'Unpower' : 'Power'}
               onClick={() => act('power_toggle')} />
-              {data.cell && (
+              {cell && (
                 <ProgressBar
-                  value={data.percentage / 100}
-                  content ={data.percentage + '%'}
+                  value={percentage / 100}
+                  content ={percentage + '%'}
                   ranges={{
                     good: [0.6, Infinity],
                     average: [0.3, 0.6],
@@ -32,27 +42,35 @@ export const RIGSuit = (props, context) => {
             </Flex>
             <Collapsible
               title = "RIG Information">
-              <LabeledList></LabeledList>
-              Power usage = {data.power_use} <br/>
-              Modules = {data.maximum_modules} <br/>
-              Module weight = {data.module_weight} <br/>
-              Maximum weight = {data.maximum_modules_weight} <br/>
-              Installed AI = {data.ai} <br/>
+              <LabeledList>
+                <LabeledList.Item>
+                  Power usage = {power_use}
+                </LabeledList.Item>
+                <LabeledList.Item>
+                  Modules = {maximum_modules}
+                </LabeledList.Item>
+                <LabeledList.Item>
+                  Module weight = {module_weight}
+                </LabeledList.Item>
+                <LabeledList.Item>
+                  Maximum weight = {maximum_modules_weight}
+                </LabeledList.Item>
+              </LabeledList>
             </Collapsible>
             <Flex>
              <Flex.item>
               <Button
-                content="Become the owner"
+                content={owner ? 'Purge owner' : 'Become owner'}
                 onClick={() => act('toggle_owner')} />
              </Flex.item>
              <Flex.item>
               <Button
-                content="Lock to current ID acces"
+                content={id ? 'Purge ID Requirements' : 'Lock RIG to current ID Acces'}
                 onClick={() => act('toggle_id')} />
              </Flex.item>
              <Flex.item>
               <Button
-                content="Toggle RIG Lock"
+                content={lock ? 'Unlock RIG' : 'Lock RIG'}
                 onClick={() => act('toggle_lock')} />
              </Flex.item>
             </Flex>
@@ -86,7 +104,7 @@ export const RIGSuit = (props, context) => {
              )) : 'None'}
           </Section>
           </LabeledList>
-        </Window.Content>
-      </Window>
-    )
+      </Window.Content>
+    </Window>
+    );
   };

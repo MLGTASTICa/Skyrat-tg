@@ -290,6 +290,9 @@
 	data["percentage"] = cell ? round(cell.percent(), 1) : 0
 	data["max_charge"] = cell?.maxcharge
 	data["powered"] = powered
+	data["lock"] = locked
+	data["id"] = req_access ? 1 : 0
+	data["owner"] = owner_suit ? 1 : 0
 	var/special_counter = 0
 	for(var/obj/item/rig_module/module in modules)
 		var/list/handle = list()
