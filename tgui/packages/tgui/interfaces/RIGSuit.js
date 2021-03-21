@@ -20,86 +20,63 @@ export const RIGSuit = (props, context) => {
   } = data;
   return (
     <Window
-      width = {300}
+      width = {50}
       height = {600}>
       <Window.Content scrollable>
         <Section title="RIG Statistics">
           <Flex>
-            <Button
-              icon="power-off"
-              color={powered ? 'red' : 'green'}
-              content={powered ? 'Unpower' : 'Power'}
-              onClick={() => act('power_toggle')} />
+            <Flex.Item>
+              <Button
+                icon="power-off"
+                color={powered ? 'red' : 'green'}
+                content={powered ? 'Unpower' : 'Power'}
+                onClick={() => act('power_toggle')} />
+            </Flex.Item>
+            <Flex.Item>
               {cell && (
                 <ProgressBar
                   value={percentage / 100}
-                  content ={percentage + '%'}
+                  content={percentage + '%'}
                   ranges={{
                     good: [0.6, Infinity],
                     average: [0.3, 0.6],
                     bad: [-Infinity, 0.3],
-                }}/> ) || 'None'}
-            </Flex>
-            <Collapsible
-              title = "RIG Information">
-              <LabeledList>
-                <LabeledList.Item>
-                  Power usage = {power_use}
-                </LabeledList.Item>
-                <LabeledList.Item>
-                  Modules = {maximum_modules}
-                </LabeledList.Item>
-                <LabeledList.Item>
-                  Module weight = {module_weight}
-                </LabeledList.Item>
-                <LabeledList.Item>
-                  Maximum weight = {maximum_modules_weight}
-                </LabeledList.Item>
-              </LabeledList>
-            </Collapsible>
-            <Flex>
-             <Flex.item>
-              <Button
-                content={owner ? 'Purge owner' : 'Become owner'}
-                onClick={() => act('toggle_owner')} />
-             </Flex.item>
-             <Flex.item>
-              <Button
-                content={id ? 'Purge ID Requirements' : 'Lock RIG to current ID Acces'}
-                onClick={() => act('toggle_id')} />
-             </Flex.item>
-             <Flex.item>
-              <Button
-                content={lock ? 'Unlock RIG' : 'Lock RIG'}
-                onClick={() => act('toggle_lock')} />
-             </Flex.item>
-            </Flex>
-          </Section>
+              }}/> ) || 'None'}
+          </Flex.Item>
+          </Flex>
+          <Collapsible
+            title = "RIG Information">
+              Bruh momento ?
+          </Collapsible>
+        <Button
+          content={owner ? 'Purge owner' : 'Become owner'}
+          onClick={() => act('toggle_owner')} />
+        <Button
+          content={id ? 'Purge ID Requirements' : 'Lock RIG to current ID Acces'}
+          onClick={() => act('toggle_id')} />
+        <Button
+          content={lock ? 'Unlock RIG' : 'Lock RIG'}
+          onClick={() => act('toggle_lock')} />
+        </Section>
           <LabeledList>
           <Section title="Modules?">
             {module_data ? module_data.map(module => (
               <Flex>
-                <Flex.item>
-                 <Button
+                  <Button
                    content="Eject module"
                    onClick={() => act('eject_specific_module', {
                    identifier: module.id,
                  })} />
-                </Flex.item>
-                <Flex.item>
                  <Button
                    content="Configure"
                    onClick={() => act('configure_specific_module', {
                    identifier: module.id,
                  })} />
-                </Flex.item>
-                <Flex.item>
                  <Button
                    content="Allow PAI Control"
                    onClick={() => act('give_pai_acces', {
                    identifier: module.id,
                  })} />
-                </Flex.item>
               </Flex>
              )) : 'None'}
           </Section>
