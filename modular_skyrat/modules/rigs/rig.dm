@@ -175,8 +175,6 @@
 			return FALSE
 		ADD_TRAIT(src, TRAIT_NODROP, src)
 		to_chat(wearer,text = "Deploying rig")
-		for(var/obj/item/clothing/rig_suit_holder in suit_pieces)
-			rig_suit_holder.slowdown = 0
 		wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
 		wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
 		wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
@@ -194,21 +192,21 @@
 		deployed = FALSE
 		powered = FALSE
 		REMOVE_TRAIT(src, TRAIT_NODROP, src)
-		unpower_suit()
 		var/obj/item/clothing/cloth1 = wearer.get_item_by_slot(ITEM_SLOT_HEAD)
 		var/obj/item/clothing/cloth2 = wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING)
 		var/obj/item/clothing/cloth3 = wearer.get_item_by_slot(ITEM_SLOT_GLOVES)
 		var/obj/item/clothing/cloth4 = wearer.get_item_by_slot(ITEM_SLOT_FEET)
 		if(istype(cloth1, /obj/item/clothing/head/helmet/rig_suit))
-			handle_clothing_drop(cloth1, ITEM_SLOT_HEAD)
+			handle_clothing_drop(cloth1)
 		if(istype(cloth2, /obj/item/clothing/suit/armor/rig_suit))
-			handle_clothing_drop(cloth2, ITEM_SLOT_OCLOTHING)
+			handle_clothing_drop(cloth2)
 		if(istype(cloth3, /obj/item/clothing/gloves/rig_suit))
-			handle_clothing_drop(cloth3, ITEM_SLOT_GLOVES)
+			handle_clothing_drop(cloth3)
 		if(istype(cloth4, /obj/item/clothing/shoes/rig_suit))
-			handle_clothing_drop(cloth4, ITEM_SLOT_FEET)
+			handle_clothing_drop(cloth4)
 		for(var/obj/item/clothing/cloth in contents)
 			wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
+		unpower_suit()
 
 /// Screwdirver act
 /obj/item/rig_suit/screwdriver_act(mob/living/user, obj/item/I)
@@ -293,12 +291,18 @@
 	data["lock"] = locked
 	data["id"] = req_access ? 1 : 0
 	data["owner"] = owner_suit ? 1 : 0
+	data["helmet"] = list("name" = suit_pieces[1]?.name, "deployed" = suit_pieces[1]?.deployed)
+	data["chestpiece"] = list("name" = suit_pieces[2]?.name, "deployed" = suit_pieces[2]?.deployed)
+	data["gloves"] = list("name" = suit_pieces[3]?.name, "deployed" = suit_pieces[3]?.deployed)
+	data["boots"] = list("name" = suit_pieces[4]?.name, "deployed" = suit_pieces[4]?.deployed)
+	data["armor"] = armor.getList()
 	var/special_counter = 0
 	for(var/obj/item/rig_module/module in modules)
 		var/list/handle = list()
 		special_counter++
 		handle["id"] = special_counter
 		handle["name"] = module.name
+		handle["pai"] = module.PAI_control
 		data["module_data"] += list(handle)
 
 	return data
@@ -350,4 +354,12 @@
 			var/id = params["identifier"]
 			var/obj/item/rig_module/module = modules[id]
 			module.PAI_control = TRUE
+		if("toggle_part")
+			var/id = params["identifier"]
+			var/obj/item/clothing/rig_suit_holder/suit_piece = suit_pieces[id]
+			if(suit_piece?.deployed)
+				handle_clothing_drop(suit_piece)
+			else
+				wearer.equip_to_slot_forcefully(suit_pieces[id], null, src)
+			return TRUE
 

@@ -5,6 +5,8 @@
 	if(trash)
 		doUnEquip(trash, TRUE, loc, FALSE, TRUE, FALSE)
 		trash.forceMove(rig)
+	if(!slot)
+		slot = clothing.slot_flags
 	equip_to_slot_if_possible(clothing, slot, FALSE, FALSE)
 	clothing.deployed = TRUE
 	switch(slot)
