@@ -543,6 +543,19 @@
 /datum/action/rig_module/targeted_ballistic/ui_data(mob/user)
 	var/list/data = list()
 
+
+
+	return data
+
+/datum/action/rig_module/targeted_ballistic/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("pick")
+			selected_caliber = params["bulletcaliber"]
+		if("pick_firemode")
+			firemode = params["firemode_id"]
 /*
 Laser Modules!
 */
