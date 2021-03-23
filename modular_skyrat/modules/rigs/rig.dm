@@ -14,6 +14,8 @@
 	var/helmet = /obj/item/clothing/head/helmet/rig_suit
 	var/gloves = /obj/item/clothing/gloves/rig_suit
 	var/boots = /obj/item/clothing/shoes/rig_suit
+	/// A delay for deploying each part
+	var/deployment_delay = 1 SECOND
 	/// The AI this rig is currently hosting if any
 	var/mob/living/AI
 	/// If the AI can use its linked abilities
@@ -56,7 +58,7 @@
 	var/rig_power_use = 25
 	/// The spot holding the deploy undeploy action , it has to be done this way because byond can't find datums ..
 	var/deploy_slot = null
-	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up
+	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up. Has to be done this way because Byond won't let me do it on itself.
 	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy, /datum/action/rig_suit/open_ui)
 	/// A list holding references to the actions after they were initialized
 	var/list/datum/action/rig_suit/action_storage_rig = list()
@@ -296,11 +298,9 @@
 	data["gloves"] = list("name" = suit_pieces[3]?.name, "deployed" = suit_pieces[3]?.deployed)
 	data["boots"] = list("name" = suit_pieces[4]?.name, "deployed" = suit_pieces[4]?.deployed)
 	data["armor"] = armor.getList()
-	var/special_counter = 0
 	for(var/obj/item/rig_module/module in modules)
 		var/list/handle = list()
-		special_counter++
-		handle["id"] = special_counter
+		handle["id"] = REF(module)
 		handle["name"] = module.name
 		handle["pai"] = module.PAI_control
 		data["module_data"] += list(handle)
@@ -339,20 +339,15 @@
 				to_chat(wearer, text = "You feel the RIG clamp itself onto your chest!")
 			locked = !locked
 		if("eject_specific_module")
-			var/id = params["identifier"]
-			to_chat(wearer, text = "Identifier is [id]")
-			var/obj/item/rig_module/module = modules[id]
-			to_chat(wearer, text = "Module is [module]")
-			modules -= modules[id]
-			module.forceMove(wearer.loc)
-			module.remove_ability(src)
+			var/target_module = locate(params["identifier"] in modules)
+			modules -= target_module
+			target_module.forceMove(wearer.loc)
+			target_module.remove_ability(src)
 		if("configure_specific_module")
-			var/id = params["identifier"]
-			var/obj/item/rig_module/module = modules[id]
+			var/obj/item/rig_module/module = locate(params["identifier"] in modules)
 			module.action_storage[1].ui_interact(wearer)
 		if("give_pai_acces")
-			var/id = params["identifier"]
-			var/obj/item/rig_module/module = modules[id]
+			var/obj/item/rig_module/module = locate(params["identifier"] in modules)
 			module.PAI_control = TRUE
 		if("toggle_part")
 			var/id = params["identifier"]
