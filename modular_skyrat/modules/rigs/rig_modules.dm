@@ -567,10 +567,11 @@ Laser Modules!
 /obj/item/rig_module/targeted/disabler_minigun
 	name = "KER-6 Disabler module"
 	desc = "A experimental disabler laser minigun."
+	actions_to_add = list(/datum/action/rig_module/targeted/disabler_minigun)
 	cooldown = 1 SECONDS * 0.25
-	spread = 2
+	spread = 5
 
-/datum/action/rig_module/targeted/disabler
+/datum/action/rig_module/targeted/disabler_minigun
 	name = "Toggle KER-6 Disabler module"
 	desc = "Laser go brr"
 	projectiles = list(/obj/projectile/beam/disabler, "Disabler")
