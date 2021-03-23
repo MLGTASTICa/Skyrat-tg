@@ -321,10 +321,6 @@
 	name = "Bounty Pad (Computer Board)"
 	build_path = /obj/machinery/computer/piratepad_control/civilian
 
-/obj/item/circuitboard/computer/tram_controls
-	name = "Tram Controls (Computer Board)"
-	build_path = /obj/machinery/computer/tram_controls
-
 //Medical
 
 /obj/item/circuitboard/computer/crew
@@ -462,11 +458,6 @@
 	build_path = /obj/machinery/computer/camera_advanced/syndie
 
 //Service
-
-/obj/item/circuitboard/computer/chef_order
-	name = "Produce Orders Console (Computer Board)"
-	icon_state = "supply"
-	build_path = /obj/machinery/computer/chef_order
 
 //Supply
 

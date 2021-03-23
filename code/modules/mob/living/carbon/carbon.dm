@@ -1,6 +1,6 @@
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
-	create_reagents(1000, REAGENT_HOLDER_ALIVE)
+	create_reagents(1000)
 	assign_bodypart_ownership()
 	update_body_parts() //to update the carbon's new bodyparts appearance
 
@@ -119,33 +119,30 @@
 /mob/living/carbon/proc/toggle_throw_mode()
 	if(stat)
 		return
-	if(throw_mode)
-		throw_mode_off(THROW_MODE_TOGGLE)
+	if(in_throw_mode)
+		throw_mode_off()
 	else
-		throw_mode_on(THROW_MODE_TOGGLE)
+		throw_mode_on()
 
 
-/mob/living/carbon/proc/throw_mode_off(method)
-	if(throw_mode > method) //A toggle doesnt affect a hold
-		return
-	throw_mode = THROW_MODE_DISABLED
+/mob/living/carbon/proc/throw_mode_off()
+	in_throw_mode = FALSE
 	if(hud_used)
 		hud_used.throw_icon.icon_state = "act_throw_off"
 
 
-/mob/living/carbon/proc/throw_mode_on(mode = THROW_MODE_TOGGLE)
-	throw_mode = mode
+/mob/living/carbon/proc/throw_mode_on()
+	in_throw_mode = TRUE
 	if(hud_used)
 		hud_used.throw_icon.icon_state = "act_throw_on"
 
 /mob/proc/throw_item(atom/target)
 	SEND_SIGNAL(src, COMSIG_MOB_THROW, target)
-	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CARBON_THROW_THING, src, target)
 	return
 
 /mob/living/carbon/throw_item(atom/target)
 	. = ..()
-	throw_mode_off(THROW_MODE_TOGGLE)
+	throw_mode_off()
 	if(!target || !isturf(loc))
 		return
 	if(istype(target, /atom/movable/screen))

@@ -131,7 +131,7 @@
 // Variety of overrides so the overlays don't get affected by weird things.
 
 /atom/movable/lighting_object/ex_act(severity)
-	return FALSE
+	return
 
 /atom/movable/lighting_object/singularity_act()
 	return

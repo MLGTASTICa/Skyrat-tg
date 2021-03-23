@@ -17,7 +17,7 @@ function Download-Node {
 	if (Test-Path $NodeTarget -PathType Leaf) {
 		return
 	}
-	Write-Output "Downloading Node v$NodeVersion (may take a while)"
+	Write-Output "Downloading Node v$NodeVersion"
 	New-Item $NodeTargetDir -ItemType Directory -ErrorAction silentlyContinue | Out-Null
 	$WebClient = New-Object Net.WebClient
 	$WebClient.DownloadFile($NodeSource, $NodeTarget)

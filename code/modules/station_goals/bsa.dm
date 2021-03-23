@@ -1,4 +1,3 @@
-/* SKYRAT EDIT REMOVAL - MOVED TO MODULAR BSA_OVERHAUL
 // Crew has to build a bluespace cannon
 // Cargo orders part for high price
 // Requires high amount of power
@@ -9,6 +8,7 @@
 /datum/station_goal/bluespace_cannon/get_report()
 	return {"Our military presence is inadequate in your sector.
 		We need you to construct BSA-[rand(1,99)] Artillery position aboard your station.
+
 		Base parts are available for shipping via cargo.
 		-Nanotrasen Naval Command"}
 
@@ -227,7 +227,7 @@
 	var/obj/machinery/parent
 
 /obj/structure/filler/ex_act()
-	return FALSE
+	return
 
 /obj/machinery/computer/bsa_control
 	name = "bluespace artillery control"
@@ -334,4 +334,3 @@
 	qdel(centerpiece.back)
 	qdel(centerpiece)
 	return cannon
-*/

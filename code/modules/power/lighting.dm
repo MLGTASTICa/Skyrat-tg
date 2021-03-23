@@ -620,7 +620,7 @@
 				drop_light_tube()
 			new /obj/item/stack/cable_coil(loc, 1, "red")
 		transfer_fingerprints_to(newlight)
-		if(!QDELETED(cell))
+		if(cell)
 			newlight.cell = cell
 			cell.forceMove(newlight)
 			cell = null
@@ -665,10 +665,6 @@
 // true if area has power and lightswitch is on
 /obj/machinery/light/proc/has_power()
 	var/area/A = get_area(src)
-	//SKYRAT EDIT ADDITION BEGIN
-	if(isnull(A))
-		return FALSE
-	//SKYRAT EDIT END
 	return A.lightswitch && A.power_light
 
 // returns whether this light has emergency power
@@ -739,12 +735,12 @@
 			var/datum/species/ethereal/eth_species = H.dna?.species
 			if(istype(eth_species))
 				var/datum/species/ethereal/E = H.dna.species
-				var/obj/item/organ/stomach/ethereal/stomach = H.getorganslot(ORGAN_SLOT_STOMACH)
-				if((E.drain_time > world.time) || !stomach)
+				if(E.drain_time > world.time)
 					return
 				to_chat(H, "<span class='notice'>You start channeling some power through the [fitting] into your body.</span>")
 				E.drain_time = world.time + LIGHT_DRAIN_TIME
 				if(do_after(user, LIGHT_DRAIN_TIME, target = src))
+					var/obj/item/organ/stomach/ethereal/stomach = H.getorganslot(ORGAN_SLOT_STOMACH)
 					if(istype(stomach))
 						to_chat(H, "<span class='notice'>You receive some charge from the [fitting].</span>")
 						stomach.adjust_charge(LIGHT_POWER_GAIN)
@@ -999,7 +995,7 @@
 	..()
 	shatter()
 
-/obj/item/light/attack_obj(obj/O, mob/living/user, params)
+/obj/item/light/attack_obj(obj/O, mob/living/user)
 	..()
 	shatter()
 

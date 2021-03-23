@@ -41,13 +41,13 @@
 
 /mob/living/silicon/ai/ex_act(severity, target)
 	switch(severity)
-		if(EXPLODE_DEVASTATE)
+		if(1)
 			gib()
-		if(EXPLODE_HEAVY)
+		if(2)
 			if (stat != DEAD)
 				adjustBruteLoss(60)
 				adjustFireLoss(60)
-		if(EXPLODE_LIGHT)
+		if(3)
 			if (stat != DEAD)
 				adjustBruteLoss(30)
 

@@ -62,8 +62,7 @@
 
 			for(var/turf/T in block(get_turf(cornerA),get_turf(cornerB)))
 				if(ispath(objholder,/turf))
-					T = T.ChangeTurf(objholder)
-					T.setDir(BM.build_dir)
+					T.PlaceOnTop(objholder)
 				else
 					var/obj/A = new objholder(T)
 					A.setDir(BM.build_dir)

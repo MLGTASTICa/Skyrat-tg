@@ -250,7 +250,7 @@
 		for(var/int_dam_flag in repairable_damage)
 			if(!chassis.internal_damage & int_dam_flag)
 				continue
-			chassis.clear_internal_damage(int_dam_flag)
+			chassis.clearInternalDamage(int_dam_flag)
 			repaired = TRUE
 			break
 	if(h_boost<0 || chassis.obj_integrity < chassis.max_integrity)

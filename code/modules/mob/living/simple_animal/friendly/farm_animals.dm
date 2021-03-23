@@ -25,7 +25,6 @@
 	attack_verb_continuous = "kicks"
 	attack_verb_simple = "kick"
 	attack_sound = 'sound/weapons/punch1.ogg'
-	attack_vis_effect = ATTACK_EFFECT_KICK
 	health = 40
 	maxHealth = 40
 	minbodytemp = 180
@@ -139,7 +138,6 @@
 	attack_verb_continuous = "kicks"
 	attack_verb_simple = "kick"
 	attack_sound = 'sound/weapons/punch1.ogg'
-	attack_vis_effect = ATTACK_EFFECT_KICK
 	health = 50
 	maxHealth = 50
 	var/obj/item/udder/udder = null
@@ -402,7 +400,7 @@
 	name = "udder"
 
 /obj/item/udder/Initialize()
-	create_reagents(50, REAGENT_HOLDER_ALIVE)
+	create_reagents(50)
 	reagents.add_reagent(/datum/reagent/consumable/milk, 20)
 	. = ..()
 

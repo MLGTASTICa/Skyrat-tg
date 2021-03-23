@@ -11,17 +11,17 @@
 	back = /obj/item/storage/backpack/fireproof
 	ears = /obj/item/radio/headset/syndicate/alt/assault
 	l_pocket = /obj/item/modular_computer/tablet/nukeops
-	id = /obj/item/card/id/advanced/chameleon
+	id = /obj/item/card/id/syndicate_command/assault_operative
 	suit = /obj/item/clothing/suit/space/hardsuit/syndi
 	suit_store = /obj/item/gun/ballistic/automatic/pistol/aps
 	r_pocket = /obj/item/ammo_box/magazine/m9mm_aps
 	belt = /obj/item/storage/belt/utility/syndicate
 
-	id_trim = /datum/id_trim/chameleon/operative
-
 	var/command_radio = FALSE
 	var/cqc = FALSE
 
+/obj/item/card/id/syndicate_command/assault_operative
+	assignment = "Assault Operative"
 /datum/outfit/assaultops/cqb
 	name = "Assault Operative - CQB"
 
@@ -76,12 +76,13 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
 		/obj/item/kitchen/knife/combat/survival,\
-		/obj/item/gun/energy/disabler)
+		/obj/item/gun/energy/disabler,\
+		/obj/item/gun/ballistic/automatic/l6_saw/assaultops,\
+		/obj/item/ammo_box/magazine/mm712x82=2,\
+		/obj/item/grenade/syndieminibomb)
 
-	r_hand = /obj/item/minigunpack
-
-	r_pocket = /obj/item/grenade/syndieminibomb
-
+/obj/item/gun/ballistic/automatic/l6_saw/assaultops
+	w_class = WEIGHT_CLASS_NORMAL
 
 /datum/outfit/assaultops/assault
 	name = "Assault Operative - Assault"

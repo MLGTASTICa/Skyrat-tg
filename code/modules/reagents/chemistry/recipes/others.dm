@@ -762,4 +762,3 @@
 	rate_up_lim = 50
 	purity_min = 0
 	mix_message = "The mixture's colors swirl together."
-

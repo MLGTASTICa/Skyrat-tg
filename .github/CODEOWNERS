@@ -7,6 +7,8 @@
 # Maptainers
 /_maps/ @KathrinBailey
 
+<<<<<<< HEAD
+=======
 # Cyberboss
 
 /code/__HELPERS/jatum.dm @Cyberboss
@@ -82,3 +84,4 @@
 
 #SIC SEMPER TYRANNIS
 /code/modules/hydroponics/grown/citrus.dm @optimumtact
+>>>>>>> 7f742ed0738 (Fix Mothblocks' CODEOWNERS (#57236))

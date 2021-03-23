@@ -17,7 +17,8 @@
 
 /obj/vehicle/ridden/janicart/Destroy()
 	if(mybag)
-		QDEL_NULL(mybag)
+		qdel(mybag)
+		mybag = null
 	return ..()
 
 /obj/item/janiupgrade
@@ -64,12 +65,13 @@
 
 /obj/vehicle/ridden/janicart/attack_hand(mob/user, list/modifiers)
 	. = ..()
-	if(. || !mybag)
+	if(.)
 		return
-	mybag.forceMove(get_turf(user))
-	user.put_in_hands(mybag)
-	mybag = null
-	update_appearance()
+	else if(mybag)
+		mybag.forceMove(get_turf(user))
+		user.put_in_hands(mybag)
+		mybag = null
+		update_appearance()
 
 /obj/vehicle/ridden/janicart/upgraded
 	floorbuffer = TRUE

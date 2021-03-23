@@ -254,19 +254,16 @@
 
 /mob/living/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	. = ..()
-	var/martial_result = user.apply_martial_art(src, modifiers)
-	if (martial_result != MARTIAL_ATTACK_INVALID)
-		return martial_result
+	if (user.apply_martial_art(src, modifiers))
+		return TRUE
 
 /mob/living/attack_paw(mob/living/carbon/human/user, list/modifiers)
 	if(isturf(loc) && istype(loc.loc, /area/start))
 		to_chat(user, "No attacking people at spawn, you jackass.")
 		return FALSE
 
-	var/martial_result = user.apply_martial_art(src, modifiers)
-	if (martial_result != MARTIAL_ATTACK_INVALID)
-		return martial_result
-
+	if (user.apply_martial_art(src, modifiers))
+		return TRUE
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		if (user != src)
 			user.disarm(src)
@@ -345,8 +342,8 @@
 
 /mob/living/ex_act(severity, target, origin)
 	if(origin && istype(origin, /datum/spacevine_mutation) && isvineimmune(src))
-		return FALSE
-	return ..()
+		return
+	..()
 
 //Looking for irradiate()? It's been moved to radiation.dm under the rad_act() for mobs.
 

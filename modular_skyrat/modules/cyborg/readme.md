@@ -8,8 +8,7 @@ Most new content relating to cyborgs goes here. Borg skins are in Altborgs curre
 
 ### TG Proc Changes:
 
-- /code/modules/mob/living/silicon/robot/robot_modules.dm
-- /code/modules/research/techweb/all_nodes.dm
+- N/A
 
 ### Defines:
 
@@ -26,4 +25,3 @@ Most new content relating to cyborgs goes here. Borg skins are in Altborgs curre
 ### Credits:
 
 Azarak - porting
-DuffCreeper - Code, Spriting

@@ -184,14 +184,14 @@
 	level = 6
 	passive_message = "<span class='notice'>You feel tingling on your skin as light passes over it.</span>"
 	threshold_descs = list(
-		"Stage Speed 7" = "Doubles healing speed.", //SKYRAT EDIT: Brings Noc regen into line with the rest of the healing symptoms.
+		"Stage Speed 8" = "Doubles healing speed.",
 	)
 
 /datum/symptom/heal/darkness/Start(datum/disease/advance/A)
 	. = ..()
 	if(!.)
 		return
-	if(A.totalStageSpeed() >= 7)//SKYRAT EDIT: Brings Noc regen into line with the rest of the healing symptoms.
+	if(A.totalStageSpeed() >= 8)
 		power = 2
 
 /datum/symptom/heal/darkness/CanHeal(datum/disease/advance/A)

@@ -53,9 +53,6 @@
 	pet_bonus_emote = "hops around happily!"
 	can_be_held = TRUE
 
-/mob/living/simple_animal/chicken/rabbit/empty //top hats summon these kinds of rabbits instead of the normal kind
-	eggsleft = 0 //if you want to harvest toys and easter bunny gear from these guys, you're gonna need to feed them carrots first
-
 /mob/living/simple_animal/chicken/rabbit/space
 	icon_prefix = "s_rabbit"
 	icon_state = "s_rabbit_white"
@@ -94,8 +91,7 @@
 	icon_state = "bunnyhead"
 	inhand_icon_state = "bunnyhead"
 	desc = "Considerably more cute than 'Frank'."
-	slowdown = -0.3
-	clothing_flags = THICKMATERIAL | SNUG_FIT
+	slowdown = -1
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 
 /obj/item/clothing/suit/bunnysuit
@@ -103,8 +99,7 @@
 	desc = "Hop Hop Hop!"
 	icon_state = "bunnysuit"
 	inhand_icon_state = "bunnysuit"
-	slowdown = -0.3
-	clothing_flags = THICKMATERIAL
+	slowdown = -1
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 

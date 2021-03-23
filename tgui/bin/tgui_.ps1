@@ -58,10 +58,6 @@ function task-lint {
   Write-Output "tgui: eslint check passed"
 }
 
-function task-test {
-  yarn run jest
-}
-
 ## Mr. Proper
 function task-clean {
   ## Build artifacts
@@ -100,28 +96,21 @@ if ($Args.Length -gt 0) {
   if ($Args[0] -eq "--lint") {
     $Rest = $Args | Select-Object -Skip 1
     task-install
-    task-lint @Rest
+    task-eslint @Rest
     exit 0
   }
 
   if ($Args[0] -eq "--lint-harder") {
     $Rest = $Args | Select-Object -Skip 1
     task-install
-    task-lint -c ".eslintrc-harder.yml" @Rest
+    task-eslint -c ".eslintrc-harder.yml" @Rest
     exit 0
   }
 
   if ($Args[0] -eq "--fix") {
     $Rest = $Args | Select-Object -Skip 1
     task-install
-    task-lint --fix @Rest
-    exit 0
-  }
-
-  if ($Args[0] -eq "--test") {
-    $Rest = $Args | Select-Object -Skip 1
-    task-install
-    task-test @Rest
+    task-eslint --fix @Rest
     exit 0
   }
 
@@ -136,7 +125,7 @@ if ($Args.Length -gt 0) {
 ## Make a production webpack build
 if ($Args.Length -eq 0) {
   task-install
-  task-lint
+  task-eslint
   task-webpack --mode=production
   exit 0
 }

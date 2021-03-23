@@ -189,6 +189,7 @@
 	popup.open()
 
 // called when something steps onto a human
+// this could be made more general, but for now just handle mulebot
 /mob/living/carbon/human/Crossed(atom/movable/AM)
 	. = ..()
 	spreadFire(AM)
@@ -613,6 +614,10 @@
 	//mindshield implants imply trustworthyness
 	if(HAS_TRAIT(src, TRAIT_MINDSHIELD))
 		threatcount -= 1
+
+	//Agent cards lower threatlevel.
+	if(istype(idcard, /obj/item/card/id/syndicate))
+		threatcount -= 5
 
 	return threatcount
 

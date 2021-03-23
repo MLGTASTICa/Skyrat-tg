@@ -125,7 +125,6 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 			attack_verb_continuous = "bites"
 			attack_verb_simple = "bite"
 			attack_sound = 'sound/weapons/bite.ogg'
-			attack_vis_effect = ATTACK_EFFECT_BITE
 			recolorentiresprite = TRUE
 	if(!recolorentiresprite) //we want this to proc before stand logs in, so the overlay isn't gone for some reason
 		cooloverlay = mutable_appearance(icon, theme)
@@ -270,12 +269,12 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 
 /mob/living/simple_animal/hostile/guardian/ex_act(severity, target)
 	switch(severity)
-		if(EXPLODE_DEVASTATE)
+		if(1)
 			gib()
-			return TRUE
-		if(EXPLODE_HEAVY)
+			return
+		if(2)
 			adjustBruteLoss(60)
-		if(EXPLODE_LIGHT)
+		if(3)
 			adjustBruteLoss(30)
 
 /mob/living/simple_animal/hostile/guardian/gib()

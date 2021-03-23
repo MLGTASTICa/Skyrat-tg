@@ -65,27 +65,26 @@
 		reagents.maximum_volume += B.reagents.maximum_volume
 
 /obj/machinery/chem_master/ex_act(severity, target)
-	if(severity >= EXPLODE_LIGHT) // This actually makes the dispenser immune to explosions at least as weak as [EXPLODE_LIGHT]. Don't ask me why the defines are inverted. I don't know.
-		return FALSE
-	return ..()
+	if(severity < 3)
+		..()
 
 /obj/machinery/chem_master/contents_explosion(severity, target)
-	. = ..()
-	switch(severity)
-		if(EXPLODE_DEVASTATE)
-			if(beaker)
+	..()
+	if(beaker)
+		switch(severity)
+			if(EXPLODE_DEVASTATE)
 				SSexplosions.high_mov_atom += beaker
-			if(bottle)
-				SSexplosions.high_mov_atom += bottle
-		if(EXPLODE_HEAVY)
-			if(beaker)
+			if(EXPLODE_HEAVY)
 				SSexplosions.med_mov_atom += beaker
-			if(bottle)
-				SSexplosions.med_mov_atom += bottle
-		if(EXPLODE_LIGHT)
-			if(beaker)
+			if(EXPLODE_LIGHT)
 				SSexplosions.low_mov_atom += beaker
-			if(bottle)
+	if(bottle)
+		switch(severity)
+			if(EXPLODE_DEVASTATE)
+				SSexplosions.high_mov_atom += bottle
+			if(EXPLODE_HEAVY)
+				SSexplosions.med_mov_atom += bottle
+			if(EXPLODE_LIGHT)
 				SSexplosions.low_mov_atom += bottle
 
 /obj/machinery/chem_master/handle_atom_del(atom/A)

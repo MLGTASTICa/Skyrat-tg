@@ -57,8 +57,10 @@
 	AddElement(/datum/element/atmos_sensitive)
 
 /obj/machinery/firealarm/Destroy()
-	myarea.firereset(src)
 	LAZYREMOVE(myarea.firealarms, src)
+	if(triggered)
+		triggered = FALSE
+		myarea.triggered_firealarms -= 1
 	return ..()
 
 /obj/machinery/firealarm/update_icon_state()
@@ -160,7 +162,7 @@
 	if(!is_operational)
 		return
 	var/area/A = get_area(src)
-	A.firereset()
+	A.firereset(src)
 	if(user)
 		log_game("[user] reset a fire alarm at [COORD(src)]")
 
@@ -336,21 +338,6 @@
 		set_light(l_power = 0.8)
 	else
 		set_light(l_power = 0)
-
-/obj/machinery/firealarm/directional/north
-	pixel_y = 26
-
-/obj/machinery/firealarm/directional/south
-	dir = NORTH
-	pixel_y = -26
-
-/obj/machinery/firealarm/directional/east
-	dir = WEST
-	pixel_x = 26
-
-/obj/machinery/firealarm/directional/west
-	dir = EAST
-	pixel_x = -26
 
 /*
  * Return of Party button

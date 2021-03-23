@@ -41,6 +41,3 @@
 	. = ..()
 	if(on)
 		maploaded = TRUE
-
-/obj/item/light/tube
-	icon = 'modular_skyrat/modules/aesthetics/lights/icons/lighting.dmi'

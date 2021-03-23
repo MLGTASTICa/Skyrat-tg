@@ -62,7 +62,7 @@
 
 	COOLDOWN_START(src, portal_cooldown, 10 SECONDS)
 	var/list/turf/possible_turfs = list()
-	for(var/turf/T as anything in RANGE_TURFS(8, owner))
+	for(var/turf/T in range(owner, 8))
 		if(T.density)
 			continue
 

@@ -51,3 +51,4 @@
 	worn_icon_state = "secmed_helmet"
 	icon_state = "secmed_helmet"
 	mutant_variants = NONE
+	can_flashlight = FALSE

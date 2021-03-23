@@ -36,14 +36,11 @@ GLOBAL_LIST_INIT(slot2type, list("head" = /obj/item/clothing/head/changeling, "w
 
 	var/csc = CONFIG_GET(number/changeling_scaling_coeff)
 	if(csc)
-		//num_changelings = max(1, min(round(num_players() / (csc * 2)) + 2, round(num_players() / csc))) ORIGINAL
-		num_changelings = max(1, round(num_players()/csc)) //SKYRAT EDIT CHANGE
-		message_admins("The roundtype is changeling, based off of coefficient calculations there should be [num_changelings] changelings.") //SKYRAT EDIT ADDITION
+		num_changelings = max(1, min(round(num_players() / (csc * 2)) + 2, round(num_players() / csc)))
 	else
 		num_changelings = max(1, min(num_players(), changeling_amount))
 
 	if(antag_candidates.len>0)
-		var/num_of_changelings = 0 //SKYRAT EDIT ADDIDTION
 		for(var/i = 0, i < num_changelings, i++)
 			if(!antag_candidates.len)
 				break
@@ -53,8 +50,6 @@ GLOBAL_LIST_INIT(slot2type, list("head" = /obj/item/clothing/head/changeling, "w
 			changeling.special_role = ROLE_CHANGELING
 			changeling.restricted_roles = restricted_jobs
 			GLOB.pre_setup_antags += changeling
-			num_of_changelings++ //SKYRAT EDIT ADDIDION
-		message_admins("The number of changelings should be [num_changelings] and there are currently [num_of_changelings].") //SKYRAT EDIT ADDITION
 		return TRUE
 	else
 		setup_error = "Not enough changeling candidates"

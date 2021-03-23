@@ -17,6 +17,10 @@ Doesn't work on other aliens/AI.*/
 	action_icon_state = "spell_default"
 	action_background_icon_state = "bg_alien"
 
+/obj/effect/proc_holder/alien/Initialize()
+	. = ..()
+	action = new(src)
+
 /obj/effect/proc_holder/alien/Click()
 	if(!iscarbon(usr))
 		return 1
@@ -223,10 +227,9 @@ Doesn't work on other aliens/AI.*/
 	if(!isturf(U) || !isturf(T))
 		return FALSE
 
-	var/modifiers = params2list(params)
 	user.visible_message("<span class='danger'>[user] spits neurotoxin!</span>", "<span class='alertalien'>You spit neurotoxin.</span>")
 	var/obj/projectile/neurotoxin/neurotoxin = new /obj/projectile/neurotoxin(user.loc)
-	neurotoxin.preparePixelProjectile(target, user, modifiers)
+	neurotoxin.preparePixelProjectile(target, user, params)
 	neurotoxin.fire()
 	user.newtonian_move(get_dir(U, T))
 	user.adjustPlasma(-p_cost)

@@ -21,13 +21,9 @@
 	var/recipient_reagents_holder
 	///How do we apply the new reagents to the receiver? Generally doesn't matter, but some stuff, like people, does care if its injected or whatevs
 	var/methods
-	///What color is our demand connect? Also it's not auto-colored so you'll have to make new sprites if its anything other than red, blue, yellow or green
-	var/demand_color = "red"
-	///What color is our supply connect? Also, refrain from pointlessly using non-standard colors unless it's really funny or something
-	var/supply_color = "blue"
 
 ///turn_connects is for wheter or not we spin with the object to change our pipes
-/datum/component/plumbing/Initialize(start=TRUE, _turn_connects=TRUE, _ducting_layer, datum/reagents/custom_receiver)
+/datum/component/plumbing/Initialize(start=TRUE, _turn_connects=TRUE, _ducting_layer)
 	if(!ismovable(parent))
 		return COMPONENT_INCOMPATIBLE
 
@@ -35,16 +31,12 @@
 		ducting_layer = ducting_layer
 
 	var/atom/movable/AM = parent
-	if(!AM.reagents && !custom_receiver)
+	if(!AM.reagents)
 		return COMPONENT_INCOMPATIBLE
-
 	reagents = AM.reagents
 	turn_connects = _turn_connects
 
-	if(custom_receiver)
-		recipient_reagents_holder = custom_receiver
-	else
-		recipient_reagents_holder = AM.reagents
+	recipient_reagents_holder = AM.reagents
 
 	RegisterSignal(parent, list(COMSIG_MOVABLE_MOVED,COMSIG_PARENT_PREQDELETED), .proc/disable)
 	RegisterSignal(parent, list(COMSIG_OBJ_DEFAULT_UNFASTEN_WRENCH), .proc/toggle_active)
@@ -153,9 +145,9 @@
 		var/color
 		var/direction
 		if(D & initial(demand_connects))
-			color = demand_color
+			color = "red" //red because red is mean and it takes
 		else if(D & initial(supply_connects))
-			color = supply_color
+			color = "blue" //blue is nice and gives
 		else
 			continue
 
@@ -172,10 +164,10 @@
 				direction = "west"
 
 		if(turn_connects)
-			I = image('icons/obj/plumbing/connects.dmi', "[direction]-[color]", layer = AM.layer - 1)
+			I = image('icons/obj/plumbing/plumbers.dmi', "[direction]-[color]", layer = AM.layer - 1)
 
 		else
-			I = image('icons/obj/plumbing/connects.dmi', "[direction]-[color]-s", layer = AM.layer - 1) //color is not color as in the var, it's just the name of the icon_state
+			I = image('icons/obj/plumbing/plumbers.dmi', "[direction]-[color]-s", layer = AM.layer - 1) //color is not color as in the var, it's just the name of the icon_state
 			I.dir = D
 
 		I.pixel_x = duct_x
@@ -316,21 +308,3 @@
 /datum/component/plumbing/tank
 	demand_connects = WEST
 	supply_connects = EAST
-
-#define READY 2
-///Baby component for the buffer plumbing machine
-/datum/component/plumbing/buffer
-	demand_connects = WEST
-	supply_connects = EAST
-
-/datum/component/plumbing/buffer/Initialize(start=TRUE, _turn_connects=TRUE, _ducting_layer, datum/reagents/custom_receiver)
-	if(!istype(parent, /obj/machinery/plumbing/buffer))
-		return COMPONENT_INCOMPATIBLE
-
-	return ..()
-
-/datum/component/plumbing/buffer/can_give(amount, reagent, datum/ductnet/net)
-	var/obj/machinery/plumbing/buffer/buffer = parent
-	return (buffer.mode == READY) ? ..() : FALSE
-
-#undef READY

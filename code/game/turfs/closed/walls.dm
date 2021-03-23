@@ -62,7 +62,7 @@
 /turf/closed/wall/attack_tk()
 	return
 
-/turf/closed/wall/proc/dismantle_wall(devastated = FALSE, explode = FALSE)
+/turf/closed/wall/proc/dismantle_wall(devastated=0, explode=0)
 	if(devastated)
 		devastate_wall()
 	else
@@ -80,8 +80,7 @@
 
 /turf/closed/wall/proc/break_wall()
 	new sheet_type(src, sheet_amount)
-	if(girder_type)
-		return new girder_type(src)
+	return new girder_type(src)
 
 /turf/closed/wall/proc/devastate_wall()
 	new sheet_type(src, sheet_amount)
@@ -92,16 +91,18 @@
 	if(target == src)
 		dismantle_wall(1,1)
 		return
-
 	switch(severity)
-		if(EXPLODE_DEVASTATE)
+		if(1)
 			//SN src = null
 			var/turf/NT = ScrapeAway()
 			NT.contents_explosion(severity, target)
 			return
-		if(EXPLODE_HEAVY)
-			dismantle_wall(prob(50), TRUE)
-		if(EXPLODE_LIGHT)
+		if(2)
+			if (prob(50))
+				dismantle_wall(0,1)
+			else
+				dismantle_wall(1,1)
+		if(3)
 			if (prob(hardness))
 				dismantle_wall(0,1)
 	if(!density)

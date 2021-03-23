@@ -21,9 +21,9 @@ Armageddon is truly going to fuck the station, use it sparingly.
 	earliest_start = 20 MINUTES
 
 /datum/round_event/cme
-	startWhen = 6
-	endWhen	= 66
-	announceWhen = 10
+	startWhen		= 6
+	endWhen			= 66
+	announceWhen	= 10
 	var/cme_intensity = CME_MINIMAL
 	var/cme_frequency_lower
 	var/cme_frequency_upper
@@ -105,8 +105,7 @@ Armageddon is truly going to fuck the station, use it sparingly.
 			kill()
 
 	for(var/turf/open/floor/T in world)
-		var/area/turf_area = get_area(T)
-		if(is_station_level(T.z) && !istype(turf_area, /area/solars) && !istype(turf_area, /area/icemoon))
+		if(is_station_level(T.z))
 			cme_start_locs += T
 
 /datum/round_event/cme/announce(fake)
@@ -143,12 +142,15 @@ Armageddon is truly going to fuck the station, use it sparingly.
 		var/turf/spawnpoint = pick(cme_start_locs)
 		spawn_cme(spawnpoint, cme_intensity)
 
-/datum/round_event/cme/proc/spawn_cme(var/turf/spawnpoint, intensity)
+/datum/round_event/cme/proc/spawn_cme(spawnpoint, intensity)
 	if(intensity == CME_RANDOM)
 		intensity = pick(CME_MINIMAL, CME_MODERATE, CME_EXTREME)
 	var/area/loc_area_name = get_area(spawnpoint)
 	minor_announce("WARNING! [uppertext(intensity)] PULSE EXPECTED IN: [loc_area_name.name]", "Solar Flare Log:")
-	alert_sound_to_playing(sound('modular_skyrat/modules/cme/sound/cme_warning.ogg'))
+	for(var/i in GLOB.mob_list)
+		var/mob/M = i
+		if(M.client)
+			SEND_SOUND(M, sound('modular_skyrat/modules/cme/sound/cme_warning.ogg'))
 	switch(intensity)
 		if(CME_MINIMAL)
 			var/obj/effect/cme/spawnedcme = new(spawnpoint)
@@ -246,7 +248,7 @@ Armageddon is truly going to fuck the station, use it sparingly.
 	explosion(src, 0, 0, 2, flame_range = 3)
 	for(var/i in GLOB.mob_list)
 		var/mob/M = i
-		if(M.client && M.z == z)
+		if(M.client)
 			SEND_SOUND(M, sound('modular_skyrat/modules/cme/sound/cme.ogg'))
 			shake_camera(M, 15, 1)
 	qdel(src)
@@ -264,26 +266,17 @@ Armageddon is truly going to fuck the station, use it sparingly.
 	playsound(src,'sound/weapons/resonator_blast.ogg',100,TRUE)
 	for(var/i in GLOB.mob_list)
 		var/mob/M = i
-		if(M.client && M.z == z)
+		if(M.client)
 			SEND_SOUND(M, sound('modular_skyrat/modules/cme/sound/cme.ogg'))
 			shake_camera(M, 15, 1)
 	qdel(src)
 
 /obj/effect/cme/singularity_pull()
-	burst()
+	return
 
 /obj/effect/cme/proc/anomalyNeutralize()
 	playsound(src,'sound/weapons/resonator_blast.ogg',100,TRUE)
-	new /obj/effect/particle_effect/smoke/bad(loc)
-	var/turf/open/T = get_turf(src)
-	if(istype(T))
-		T.atmos_spawn_air("o2=30;TEMP=5778")
-	color = COLOR_WHITE
-	light_color = COLOR_WHITE
-	neutralized = TRUE
-
-/obj/effect/cme/extreme/anomalyNeutralize()
-	playsound(src,'sound/weapons/resonator_blast.ogg',100,TRUE)
+	minor_announce("[src.name] NEUTRALIZED.", "Solar Flare Log:")
 	new /obj/effect/particle_effect/smoke/bad(loc)
 	var/turf/open/T = get_turf(src)
 	if(istype(T))
@@ -292,12 +285,15 @@ Armageddon is truly going to fuck the station, use it sparingly.
 	light_color = COLOR_WHITE
 	neutralized = TRUE
 
-/obj/effect/cme/armageddon/anomalyNeutralize()
-	playsound(src,'sound/weapons/resonator_blast.ogg',100,TRUE)
-	new /obj/effect/particle_effect/smoke/bad(loc)
-	var/turf/open/T = get_turf(src)
-	if(istype(T))
-		T.atmos_spawn_air("o2=30;plasma=80;TEMP=5778")
-	color = COLOR_WHITE
-	light_color = COLOR_WHITE
-	neutralized = TRUE
+/client/proc/manual_events_mode()
+	set name = "Manual Event Mode Toggle"
+	set category = "Admin"
+	set desc = "Toggle manual event mode."
+
+	if(!holder)
+		return
+
+	SSevents.manual_mode = !SSevents.manual_mode
+
+	log_admin("EVENT MODE SWITCHED.")
+	message_admins("EVENT SYSTEM NOW IN [SSevents.manual_mode ? "MANUAL OPERATION" : "AUTOMATIC OPERATION"]. TRIGGERED BY: [src]")

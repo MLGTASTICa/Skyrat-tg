@@ -37,7 +37,8 @@
 	if(owner)
 		Remove(owner)
 	target = null
-	QDEL_NULL(button)
+	qdel(button)
+	button = null
 	return ..()
 
 /datum/action/proc/Grant(mob/M)
@@ -201,8 +202,6 @@
 	name = "Toggle Hood"
 
 /datum/action/item_action/toggle_firemode
-	icon_icon = 'modular_skyrat/master_files/icons/mob/actions/actions_items.dmi' //SKYRAT EDIT ADDITION
-	button_icon_state = "fireselect_no" //SKYRAT EDIT ADDITION
 	name = "Toggle Firemode"
 
 /datum/action/item_action/rcl_col
@@ -677,10 +676,6 @@
 	desc = "Activates the jump boot's internal propulsion system, allowing the user to dash over 4-wide gaps."
 	icon_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "jetboot"
-
-/datum/action/item_action/bhop/brocket
-	name = "Activate Rocket Boots"
-	desc = "Activates the boot's rocket propulsion system, allowing the user to hurl themselves great distances."
 
 /datum/action/language_menu
 	name = "Language Menu"

@@ -26,7 +26,6 @@
 	attack_verb_continuous = "pecks"
 	attack_verb_simple = "peck"
 	attack_sound = "goose"
-	attack_vis_effect = ATTACK_EFFECT_BITE
 	speak_emote = list("honks")
 	faction = list("neutral")
 	attack_same = TRUE

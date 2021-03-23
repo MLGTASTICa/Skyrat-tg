@@ -20,6 +20,6 @@
 	result = /obj/item/crucifix
 	reqs = list(/obj/item/stack/sheet/mineral/gold = 1,
 				/obj/item/stack/sheet/mineral/diamond = 1)
-	tool_behaviors = list(TOOL_SCREWDRIVER)
+	tool_behaviors = list(/obj/item/chisel)
 	time = 20
 	category = CAT_MISC

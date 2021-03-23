@@ -22,8 +22,6 @@
 	var/additional_req_text
 	///Required machines for the craft, set the assigned value of the typepath to CRAFTING_MACHINERY_CONSUME or CRAFTING_MACHINERY_USE. Lazy associative list: type_path key -> flag value.
 	var/list/machinery
-	///Should only one object exist on the same turf?
-	var/one_per_turf = FALSE
 
 /datum/crafting_recipe/New()
 	if(!(result in reqs))
@@ -307,10 +305,10 @@
 	..()
 	blacklist += subtypesof(/obj/item/gun/energy/laser)
 
-/datum/crafting_recipe/teslacannon
-	name = "Tesla Cannon"
+/datum/crafting_recipe/teslarevolver
+	name = "Tesla Revolver"
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WIRECUTTER)
-	result = /obj/item/gun/energy/tesla_cannon
+	result = /obj/item/gun/energy/tesla_revolver
 	reqs = list(/obj/item/assembly/signaler/anomaly/flux = 1,
 				/obj/item/stack/cable_coil = 5,
 				/obj/item/weaponcrafting/gunkit/tesla = 1)
@@ -837,13 +835,6 @@
 				/obj/item/stack/sheet/animalhide/ashdrake = 5)
 	category = CAT_PRIMAL
 
-/datum/crafting_recipe/godslayer
-	name = "Godslayer Armour"
-	result = /obj/item/clothing/suit/hooded/cloak/godslayer
-	time = 60
-	reqs = list(/obj/item/ice_energy_crystal = 1, /obj/item/wendigo_skull = 1, /obj/item/clockwork_alloy = 1)
-	category = CAT_PRIMAL
-
 /datum/crafting_recipe/firebrand
 	name = "Firebrand"
 	result = /obj/item/match/firebrand
@@ -1155,6 +1146,15 @@
 				)
 	category = CAT_MISC
 
+/datum/crafting_recipe/elder_atmosian_fireaxe
+	name = "Elder Axe"
+	result = /obj/item/fireaxe/elder_atmosian_fireaxe
+	time = 6 SECONDS
+	reqs = list(/obj/item/fireaxe/metal_h2_axe = 1,
+				/obj/item/stack/sheet/mineral/zaukerite = 10,
+				)
+	category = CAT_MISC
+
 /datum/crafting_recipe/shutters
 	name = "Shutters"
 	reqs = list(/obj/item/stack/sheet/plasteel = 10,
@@ -1165,7 +1165,6 @@
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_MULTITOOL, TOOL_WIRECUTTER, TOOL_WELDER)
 	time = 15 SECONDS
 	category = CAT_MISC
-	one_per_turf = TRUE
 
 /datum/crafting_recipe/blast_doors
 	name = "Blast Door"
@@ -1177,7 +1176,6 @@
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_MULTITOOL, TOOL_WIRECUTTER, TOOL_WELDER)
 	time = 30 SECONDS
 	category = CAT_MISC
-	one_per_turf = TRUE
 
 /datum/crafting_recipe/aquarium
 	name = "Aquarium"

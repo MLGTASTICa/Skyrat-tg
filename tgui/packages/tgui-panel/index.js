@@ -93,13 +93,8 @@ const setupApp = () => {
     'pos': '0x0',
     'size': '0x0',
   });
-
-  // Resize the panel to match the non-browser output
-  Byond.winget('output').then(output => {
-    Byond.winset('browseroutput', {
-      'size': output.size,
-    });
-  });
+  // SKYRAT EDIT ADDITION - UI
+  based_winset();
 
   // Enable hot module reloading
   if (module.hot) {
@@ -117,6 +112,14 @@ const setupApp = () => {
       renderApp();
     });
   }
+};
+
+// SKYRAT EDIT ADDITION - UI
+const based_winset = async (based_on_what = 'output') => {
+  const winget_output = await Byond.winget(based_on_what);
+  Byond.winset('browseroutput', {
+    'size': winget_output["size"],
+  });
 };
 
 setupApp();

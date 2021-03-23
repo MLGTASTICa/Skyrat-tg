@@ -9,7 +9,6 @@
 
 /obj/item/organ/tail/monkey
 	mutantpart_info = list(MUTANT_INDEX_NAME = "Monkey", MUTANT_INDEX_COLOR_LIST = list("FFF"))
-	can_wag = FALSE
 
 /obj/item/organ/tail/lizard
 	mutantpart_info = list(MUTANT_INDEX_NAME = "Smooth", MUTANT_INDEX_COLOR_LIST = list("DFD"))

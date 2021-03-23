@@ -21,6 +21,3 @@
 
 /area/centcom/holding/cafepark
 	name = "Ghost Cafe Outdoors"
-
-/area/centcom/holding/cafeplumbing
-	name = "Ghost Cafe Plumbing"

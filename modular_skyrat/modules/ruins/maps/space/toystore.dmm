@@ -3,10 +3,11 @@
 /turf/template_noop,
 /area/template_noop)
 "b" = (
+/obj/structure/fans/tiny/invisible,
 /obj/machinery/light{
 	dir = 8
 	},
-/turf/open/floor/iron/airless,
+/turf/open/floor/iron,
 /area/ruin/space/has_grav/powered{
 	name = "Toy Store"
 	})
@@ -319,7 +320,8 @@
 	name = "Toy Store"
 	})
 "S" = (
-/turf/open/floor/iron/airless,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/iron,
 /area/ruin/space/has_grav/powered{
 	name = "Toy Store"
 	})
@@ -338,13 +340,6 @@
 	})
 "X" = (
 /obj/machinery/door/airlock/external/glass,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/powered{
-	name = "Toy Store"
-	})
-"Y" = (
-/obj/machinery/door/airlock/external/glass,
-/obj/structure/fans/tiny,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/powered{
 	name = "Toy Store"
@@ -552,8 +547,8 @@ a
 f
 Z
 r
-Y
-Y
+X
+X
 r
 Z
 f
@@ -563,10 +558,10 @@ a
 a
 f
 b
-S
-S
-S
-S
+z
+z
+z
+z
 b
 f
 a

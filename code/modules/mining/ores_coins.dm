@@ -131,8 +131,9 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	qdel(src)
 
 /obj/item/stack/ore/glass/ex_act(severity, target)
-	if(severity != EXPLODE_NONE)
-		qdel(src)
+	if (severity == EXPLODE_NONE)
+		return
+	qdel(src)
 
 /obj/item/stack/ore/glass/basalt
 	name = "volcanic ash"
@@ -334,8 +335,9 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 	pixel_y = base_pixel_y + rand(0, 8) - 8
 
 /obj/item/stack/ore/ex_act(severity, target)
-	if(severity == EXPLODE_DEVASTATE)
-		qdel(src)
+	if (!severity || severity >= 2)
+		return
+	qdel(src)
 
 
 /*****************************Coin********************************/

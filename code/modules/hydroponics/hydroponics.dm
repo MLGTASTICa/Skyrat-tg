@@ -434,8 +434,10 @@
 	harvest = FALSE
 	weedlevel = 0 // Reset
 
-	var/message = "<span class='warning'>[oldPlantName] suddenly mutates into [myseed.plantname]!</span>"
-	addtimer(CALLBACK(src, .proc/after_mutation, message), 0.5 SECONDS)
+	sleep(5) // Wait a while
+	update_appearance()
+	visible_message("<span class='warning'>[oldPlantName] suddenly mutates into [myseed.plantname]!</span>")
+	TRAY_NAME_UPDATE
 
 /obj/machinery/hydroponics/proc/mutateweed() // If the weeds gets the mutagent instead. Mind you, this pretty much destroys the old plant
 	if( weedlevel > 5 )
@@ -452,17 +454,13 @@
 		harvest = FALSE
 		weedlevel = 0 // Reset
 
-		var/message = "<span class='warning'>The mutated weeds in [src] spawn some [myseed.plantname]!</span>"
-		addtimer(CALLBACK(src, .proc/after_mutation, message), 0.5 SECONDS)
+		sleep(5) // Wait a while
+		update_appearance()
+		visible_message("<span class='warning'>The mutated weeds in [src] spawn some [myseed.plantname]!</span>")
+		TRAY_NAME_UPDATE
 	else
 		to_chat(usr, "<span class='warning'>The few weeds in [src] seem to react, but only for a moment...</span>")
-/**
- * Called after plant mutation, update the appearance of the tray content and send a visible_message()
- */
-/obj/machinery/hydroponics/proc/after_mutation(message)
-		update_appearance()
-		visible_message(message)
-		TRAY_NAME_UPDATE
+
 /**
  * Plant Death Proc.
  * Cleans up various stats for the plant upon death, including pests, harvestability, and plant health.

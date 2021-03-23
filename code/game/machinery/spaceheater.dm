@@ -15,28 +15,18 @@
 	max_integrity = 250
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 80, ACID = 10)
 	circuit = /obj/item/circuitboard/machine/space_heater
-	//We don't use area power, we always use the cell
+	/// We don't use area power, we always use the cell
 	use_power = NO_POWER_USE
-	///The cell we spawn with
 	var/obj/item/stock_parts/cell/cell = /obj/item/stock_parts/cell
-	///Is the machine on?
 	var/on = FALSE
-	///What is the mode we are in now?
 	var/mode = HEATER_MODE_STANDBY
-	///Anything other than "heat" or "cool" is considered auto.
-	var/set_mode = HEATER_MODE_AUTO
-	///The temperature we trying to get to
-	var/target_temperature = T20C
-	///How much heat/cold we can deliver
-	var/heating_power = 40000
-	///How efficiently we can deliver that heat/cold (higher indicates less cell consumption)
+	var/setMode = HEATER_MODE_AUTO // Anything other than "heat" or "cool" is considered auto.
+	var/targetTemperature = T20C
+	var/heatingPower = 20000
 	var/efficiency = 20000
-	///The amount of degrees above and below the target temperature for us to change mode to heater or cooler
-	var/temperature_tolerance = 1
-	///What's the middle point of our settable temperature (30 °C)
-	var/settable_temperature_median = 30 + T0C
-	///Range of temperatures above and below the median that we can set our target temperature (increase by upgrading the capacitors)
-	var/settable_temperature_range = 30
+	var/temperatureTolerance = 1
+	var/settableTemperatureMedian = 30 + T0C
+	var/settableTemperatureRange = 30
 
 /obj/machinery/space_heater/get_cell()
 	return cell
@@ -46,6 +36,13 @@
 	if(ispath(cell))
 		cell = new cell(src)
 	update_appearance()
+
+/obj/machinery/space_heater/on_construction()
+	qdel(cell)
+	cell = null
+	panel_open = TRUE
+	update_appearance()
+	return ..()
 
 /obj/machinery/space_heater/on_deconstruction()
 	if(cell)
@@ -61,11 +58,12 @@
 	else
 		. += "There is no power cell installed."
 	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Temperature range at <b>[settable_temperature_range]°C</b>.<br>Heating power at <b>[siunit(heating_power, "W", 1)]</b>.<br>Power consumption at <b>[(efficiency*-0.0025)+150]%</b>.</span>" //100%, 75%, 50%, 25%
+		. += "<span class='notice'>The status display reads: Temperature range at <b>[settableTemperatureRange]°C</b>.<br>Heating power at <b>[siunit(heatingPower, "W", 1)]</b>.<br>Power consumption at <b>[(efficiency*-0.0025)+150]%</b>.</span>" //100%, 75%, 50%, 25%
 
 /obj/machinery/space_heater/update_icon_state()
-	. = ..()
 	icon_state = "[base_icon_state]-[on ? mode : "off"]"
+	. = ..()
+	return
 
 /obj/machinery/space_heater/update_overlays()
 	. = ..()
@@ -78,47 +76,47 @@
 			on = FALSE
 		return PROCESS_KILL
 
-	if(!cell || cell.charge <= 0)
+	if(cell && cell.charge > 0)
+		var/turf/L = loc
+		if(!istype(L))
+			if(mode != HEATER_MODE_STANDBY)
+				mode = HEATER_MODE_STANDBY
+				update_appearance()
+			return
+
+		var/datum/gas_mixture/env = L.return_air()
+
+		var/newMode = HEATER_MODE_STANDBY
+		if(setMode != HEATER_MODE_COOL && env.temperature < targetTemperature - temperatureTolerance)
+			newMode = HEATER_MODE_HEAT
+		else if(setMode != HEATER_MODE_HEAT && env.temperature > targetTemperature + temperatureTolerance)
+			newMode = HEATER_MODE_COOL
+
+		if(mode != newMode)
+			mode = newMode
+			update_appearance()
+
+		if(mode == HEATER_MODE_STANDBY)
+			return
+
+		var/heat_capacity = env.heat_capacity()
+		var/requiredEnergy = abs(env.temperature - targetTemperature) * heat_capacity
+		requiredEnergy = min(requiredEnergy, heatingPower * delta_time)
+
+		if(requiredEnergy < 1)
+			return
+
+		var/deltaTemperature = requiredEnergy / heat_capacity
+		if(mode == HEATER_MODE_COOL)
+			deltaTemperature *= -1
+		if(deltaTemperature)
+			env.temperature += deltaTemperature
+			air_update_turf(FALSE, FALSE)
+		cell.use(requiredEnergy / efficiency)
+	else
 		on = FALSE
 		update_appearance()
 		return PROCESS_KILL
-
-	var/turf/local_turf = loc
-	if(!istype(local_turf))
-		if(mode != HEATER_MODE_STANDBY)
-			mode = HEATER_MODE_STANDBY
-			update_appearance()
-		return
-
-	var/datum/gas_mixture/enviroment = local_turf.return_air()
-
-	var/new_mode = HEATER_MODE_STANDBY
-	if(set_mode != HEATER_MODE_COOL && enviroment.temperature < target_temperature - temperature_tolerance)
-		new_mode = HEATER_MODE_HEAT
-	else if(set_mode != HEATER_MODE_HEAT && enviroment.temperature > target_temperature + temperature_tolerance)
-		new_mode = HEATER_MODE_COOL
-
-	if(mode != new_mode)
-		mode = new_mode
-		update_appearance()
-
-	if(mode == HEATER_MODE_STANDBY)
-		return
-
-	var/heat_capacity = enviroment.heat_capacity()
-	var/required_energy = abs(enviroment.temperature - target_temperature) * heat_capacity
-	required_energy = min(required_energy, heating_power * delta_time)
-
-	if(required_energy < 1)
-		return
-
-	var/delta_temperature = required_energy / heat_capacity
-	if(mode == HEATER_MODE_COOL)
-		delta_temperature *= -1
-	if(delta_temperature)
-		enviroment.temperature += delta_temperature
-		air_update_turf(FALSE, FALSE)
-	cell.use(required_energy / efficiency)
 
 /obj/machinery/space_heater/RefreshParts()
 	var/laser = 0
@@ -128,14 +126,14 @@
 	for(var/obj/item/stock_parts/capacitor/M in component_parts)
 		cap += M.rating
 
-	heating_power = laser * 40000
+	heatingPower = laser * 20000
 
-	settable_temperature_range = cap * 30
+	settableTemperatureRange = cap * 30
 	efficiency = (cap + 1) * 10000
 
-	target_temperature = clamp(target_temperature,
-		max(settable_temperature_median - settable_temperature_range, TCMB),
-		settable_temperature_median + settable_temperature_range)
+	targetTemperature = clamp(targetTemperature,
+		max(settableTemperatureMedian - settableTemperatureRange, TCMB),
+		settableTemperatureMedian + settableTemperatureRange)
 
 /obj/machinery/space_heater/emp_act(severity)
 	. = ..()
@@ -145,34 +143,32 @@
 		cell.emp_act(severity)
 
 /obj/machinery/space_heater/attackby(obj/item/I, mob/user, params)
-	. = ..()
 	add_fingerprint(user)
-
-	if(default_deconstruction_screwdriver(user, icon_state, icon_state, I))
-		user.visible_message("<span class='notice'>\The [user] [panel_open ? "opens" : "closes"] the hatch on \the [src].</span>", "<span class='notice'>You [panel_open ? "open" : "close"] the hatch on \the [src].</span>")
-		update_appearance()
-		return TRUE
-
 	if(default_unfasten_wrench(user, I))
-		return TRUE
+		return
+	else if(istype(I, /obj/item/stock_parts/cell))
+		if(panel_open)
+			if(cell)
+				to_chat(user, "<span class='warning'>There is already a power cell inside!</span>")
+				return
+			else if(!user.transferItemToLoc(I, src))
+				return
+			cell = I
+			I.add_fingerprint(usr)
 
-	if(default_deconstruction_crowbar(I))
-		return TRUE
-
-	if(istype(I, /obj/item/stock_parts/cell))
-		if(!panel_open)
+			user.visible_message("<span class='notice'>\The [user] inserts a power cell into \the [src].</span>", "<span class='notice'>You insert the power cell into \the [src].</span>")
+			SStgui.update_uis(src)
+		else
 			to_chat(user, "<span class='warning'>The hatch must be open to insert a power cell!</span>")
 			return
-		if(cell)
-			to_chat(user, "<span class='warning'>There is already a power cell inside!</span>")
-			return
-		if(!user.transferItemToLoc(I, src))
-			return
-		cell = I
-		I.add_fingerprint(usr)
-		user.visible_message("<span class='notice'>\The [user] inserts a power cell into \the [src].</span>", "<span class='notice'>You insert the power cell into \the [src].</span>")
-		SStgui.update_uis(src)
-		return TRUE
+	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
+		panel_open = !panel_open
+		user.visible_message("<span class='notice'>\The [user] [panel_open ? "opens" : "closes"] the hatch on \the [src].</span>", "<span class='notice'>You [panel_open ? "open" : "close"] the hatch on \the [src].</span>")
+		update_appearance()
+	else if(default_deconstruction_crowbar(I))
+		return
+	else
+		return ..()
 
 /obj/machinery/space_heater/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -184,26 +180,26 @@
 	var/list/data = list()
 	data["open"] = panel_open
 	data["on"] = on
-	data["mode"] = set_mode
+	data["mode"] = setMode
 	data["hasPowercell"] = !!cell
 	data["chemHacked"] = FALSE
 	if(cell)
 		data["powerLevel"] = round(cell.percent(), 1)
-	data["targetTemp"] = round(target_temperature - T0C, 1)
-	data["minTemp"] = max(settable_temperature_median - settable_temperature_range, TCMB) - T0C
-	data["maxTemp"] = settable_temperature_median + settable_temperature_range - T0C
+	data["targetTemp"] = round(targetTemperature - T0C, 1)
+	data["minTemp"] = max(settableTemperatureMedian - settableTemperatureRange, TCMB) - T0C
+	data["maxTemp"] = settableTemperatureMedian + settableTemperatureRange - T0C
 
-	var/turf/local_turf = get_turf(loc)
-	var/current_temperature
-	if(istype(local_turf))
-		var/datum/gas_mixture/enviroment = local_turf.return_air()
-		current_temperature = enviroment.temperature
-	else if(isturf(local_turf))
-		current_temperature = local_turf.temperature
-	if(isnull(current_temperature))
+	var/turf/L = get_turf(loc)
+	var/curTemp
+	if(istype(L))
+		var/datum/gas_mixture/env = L.return_air()
+		curTemp = env.temperature
+	else if(isturf(L))
+		curTemp = L.temperature
+	if(isnull(curTemp))
 		data["currentTemp"] = "N/A"
 	else
-		data["currentTemp"] = round(current_temperature - T0C, 1)
+		data["currentTemp"] = round(curTemp - T0C, 1)
 	return data
 
 /obj/machinery/space_heater/ui_act(action, params)
@@ -221,7 +217,7 @@
 				START_PROCESSING(SSmachines, src)
 			. = TRUE
 		if("mode")
-			set_mode = params["mode"]
+			setMode = params["mode"]
 			. = TRUE
 		if("target")
 			if(!panel_open)
@@ -231,22 +227,14 @@
 				target= text2num(target) + T0C
 				. = TRUE
 			if(.)
-				target_temperature = clamp(round(target),
-					max(settable_temperature_median - settable_temperature_range, TCMB),
-					settable_temperature_median + settable_temperature_range)
+				targetTemperature = clamp(round(target),
+					max(settableTemperatureMedian - settableTemperatureRange, TCMB),
+					settableTemperatureMedian + settableTemperatureRange)
 		if("eject")
 			if(panel_open && cell)
 				cell.forceMove(drop_location())
 				cell = null
 				. = TRUE
-
-/obj/machinery/space_heater/constructed
-	cell = null
-
-/obj/machinery/space_heater/constructed/Initialize()
-	. = ..()
-	panel_open = TRUE
-	update_appearance()
 
 ///For use with heating reagents in a ghetto way
 /obj/machinery/space_heater/improvised_chem_heater
@@ -282,21 +270,21 @@
 
 	if(beaker.reagents.total_volume)
 		var/power_mod = 0.1 * chem_heating_power
-		switch(set_mode)
+		switch(setMode)
 			if(HEATER_MODE_AUTO)
 				power_mod *= 0.5
-				beaker.reagents.adjust_thermal_energy((target_temperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
+				beaker.reagents.adjust_thermal_energy((targetTemperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
 				beaker.reagents.handle_reactions()
 			if(HEATER_MODE_HEAT)
-				if(target_temperature < beaker.reagents.chem_temp)
+				if(targetTemperature < beaker.reagents.chem_temp)
 					return
-				beaker.reagents.adjust_thermal_energy((target_temperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
+				beaker.reagents.adjust_thermal_energy((targetTemperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
 			if(HEATER_MODE_COOL)
-				if(target_temperature > beaker.reagents.chem_temp)
+				if(targetTemperature > beaker.reagents.chem_temp)
 					return
-				beaker.reagents.adjust_thermal_energy((target_temperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
-		var/required_energy = heating_power * delta_time * (power_mod * 4)
-		cell.use(required_energy / efficiency)
+				beaker.reagents.adjust_thermal_energy((targetTemperature - beaker.reagents.chem_temp) * power_mod * delta_time * SPECIFIC_HEAT_DEFAULT * beaker.reagents.total_volume)
+		var/requiredEnergy = heatingPower * delta_time * (power_mod * 4)
+		cell.use(requiredEnergy / efficiency)
 		beaker.reagents.handle_reactions()
 	update_appearance()
 
@@ -388,10 +376,10 @@
 	if(!on || !beaker || !cell)
 		icon_state = "sheater-off"
 		return
-	if(target_temperature < beaker.reagents.chem_temp)
+	if(targetTemperature < beaker.reagents.chem_temp)
 		icon_state = "sheater-cool"
 		return
-	if(target_temperature > beaker.reagents.chem_temp)
+	if(targetTemperature > beaker.reagents.chem_temp)
 		icon_state = "sheater-heat"
 		return
 	icon_state = "sheater-off"
@@ -404,14 +392,14 @@
 	for(var/obj/item/stock_parts/capacitor/capacitor in component_parts)
 		capacitors_rating += capacitor.rating
 
-	heating_power = lasers_rating * 20000
+	heatingPower = lasers_rating * 20000
 
-	settable_temperature_range = capacitors_rating * 50 //-20 - 80 at base
+	settableTemperatureRange = capacitors_rating * 50 //-20 - 80 at base
 	efficiency = (capacitors_rating + 1) * 10000
 
-	target_temperature = clamp(target_temperature,
-		max(settable_temperature_median - settable_temperature_range, TCMB),
-		settable_temperature_median + settable_temperature_range)
+	targetTemperature = clamp(targetTemperature,
+		max(settableTemperatureMedian - settableTemperatureRange, TCMB),
+		settableTemperatureMedian + settableTemperatureRange)
 
 	chem_heating_power = efficiency/20000 //1-2.5
 

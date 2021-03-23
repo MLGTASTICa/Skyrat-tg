@@ -127,12 +127,21 @@
 /area/ruin/space/has_grav/powered{
 	name = "Unexplored Location"
 	})
+"C" = (
+/obj/structure/lattice/catwalk,
+/turf/open/space/basic,
+/area/template_noop)
 "J" = (
 /obj/machinery/power/solar/fake,
 /turf/open/floor/iron/airless/solarpanel,
 /area/ruin/space/has_grav/powered{
 	name = "Unexplored Location"
 	})
+"M" = (
+/obj/structure/lattice,
+/obj/structure/lattice,
+/turf/template_noop,
+/area/template_noop)
 "O" = (
 /obj/structure/lattice/catwalk,
 /turf/template_noop,
@@ -244,7 +253,7 @@ V
 V
 V
 V
-Z
+M
 Z
 Z
 V
@@ -261,8 +270,8 @@ m
 d
 f
 V
-O
-O
+C
+C
 V
 V
 B
@@ -329,8 +338,8 @@ m
 W
 R
 V
-O
-O
+C
+C
 V
 V
 B
@@ -380,7 +389,7 @@ a
 a
 Z
 Z
-Z
+M
 a
 a
 V

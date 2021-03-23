@@ -288,7 +288,6 @@
 	tastes = list("eggplant" = 3, "cheese" = 1)
 	foodtypes = VEGETABLES | DAIRY
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_NORMAL
 
 /obj/item/food/tortilla
 	name = "tortilla"
@@ -308,7 +307,6 @@
 	tastes = list("torilla" = 2, "meat" = 3)
 	foodtypes = GRAIN | MEAT
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_NORMAL
 
 /obj/item/food/cheesyburrito
 	name = "cheesy burrito"
@@ -318,7 +316,6 @@
 	tastes = list("torilla" = 2, "meat" = 3, "cheese" = 1)
 	foodtypes = GRAIN | MEAT | DAIRY
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_EXOTIC
 
 /obj/item/food/carneburrito
 	name = "carne asada burrito"
@@ -328,7 +325,6 @@
 	tastes = list("torilla" = 2, "meat" = 4)
 	foodtypes = GRAIN | MEAT
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_EXOTIC
 
 /obj/item/food/fuegoburrito
 	name = "fuego plasma burrito"
@@ -338,7 +334,6 @@
 	tastes = list("torilla" = 2, "meat" = 3, "hot peppers" = 1)
 	foodtypes = GRAIN | MEAT
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_LEGENDARY
 
 /obj/item/food/yakiimo
 	name = "yaki imo"
@@ -378,7 +373,6 @@
 	tastes = list("nachos" = 1)
 	foodtypes = VEGETABLES | FRIED
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_CHEAP
 
 /obj/item/food/cheesynachos
 	name = "cheesy nachos"
@@ -388,7 +382,6 @@
 	tastes = list("nachos" = 2, "cheese" = 1)
 	foodtypes = VEGETABLES | FRIED | DAIRY
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_EXOTIC
 
 /obj/item/food/cubannachos
 	name = "Cuban nachos"
@@ -426,7 +419,6 @@
 	tastes = list("death" = 2, "rock" = 1, "meat" = 1, "hot peppers" = 1)
 	foodtypes = MEAT
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_LEGENDARY
 
 /obj/item/food/powercrepe
 	name = "Powercrepe"
@@ -626,23 +618,20 @@
 		qdel(src)
 
 /obj/item/food/taco
-	name = "classic taco"
+	name = "taco"
 	desc = "A traditional taco with meat, cheese, and lettuce."
 	icon_state = "taco"
 	food_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/protein = 3, /datum/reagent/consumable/nutriment/vitamin = 2)
 	tastes = list("taco" = 4, "meat" = 2, "cheese" = 2, "lettuce" = 1)
 	foodtypes = MEAT | DAIRY | GRAIN | VEGETABLES
 	w_class = WEIGHT_CLASS_SMALL
-	venue_value = FOOD_PRICE_NORMAL
 
 /obj/item/food/taco/plain
-	name = "plain taco"
 	desc = "A traditional taco with meat and cheese, minus the rabbit food."
 	icon_state = "taco_plain"
 	food_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/protein = 2, /datum/reagent/consumable/nutriment/vitamin = 1)
 	tastes = list("taco" = 4, "meat" = 2, "cheese" = 2)
 	foodtypes = MEAT | DAIRY | GRAIN
-	venue_value = FOOD_PRICE_CHEAP
 
 /obj/item/food/branrequests
 	name = "Bran Requests Cereal"
@@ -767,7 +756,6 @@
 	icon_state = "peachcanmaint"
 	trash_type = /obj/item/trash/can/food/peaches/maint
 	tastes = list("peaches" = 1, "tin" = 7)
-	venue_value = FOOD_EXOTIC
 
 /obj/item/food/crab_rangoon
 	name = "Crab Rangoon"

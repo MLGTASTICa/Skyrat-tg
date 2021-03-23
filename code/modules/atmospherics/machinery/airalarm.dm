@@ -233,8 +233,6 @@
 	SSradio.remove_object(src, frequency)
 	qdel(wires)
 	wires = null
-	var/area/ourarea = get_area(src)
-	ourarea.atmosalert(FALSE, src)
 	return ..()
 
 /obj/machinery/airalarm/Initialize(mapload)

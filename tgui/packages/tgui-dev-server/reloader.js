@@ -67,7 +67,7 @@ export const findCacheRoot = async () => {
 
 const onCacheRootFound = cacheRoot => {
   logger.log(`found cache at '${cacheRoot}'`);
-  // Plant a dummy
+  // Plant dummy
   fs.closeSync(fs.openSync(cacheRoot + '/dummy', 'w'));
 };
 
@@ -94,12 +94,12 @@ export const reloadByondCache = async bundleDir => {
     const garbage = await resolveGlob(cacheDir, './*.+(bundle|chunk|hot-update).*');
     try {
       for (let file of garbage) {
-        fs.unlinkSync(file);
+        fs.unlink(file);
       }
       // Copy assets
       for (let asset of assets) {
         const destination = resolvePath(cacheDir, basename(asset));
-        fs.writeFileSync(destination, fs.readFileSync(asset));
+        fs.copyFile(asset, destination);
       }
       logger.log(`copied ${assets.length} files to '${cacheDir}'`);
     }
