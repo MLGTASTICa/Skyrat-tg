@@ -366,7 +366,7 @@
 	))
 
 /obj/item/rig_module/targeted_ballistic/attackby(obj/item/I, mob/living/user, params)
-	addtimer(CALLBACK(src,.proc/ammo_calculate), 1 SECONDS)
+	addtimer(CALLBACK(src, .proc/ammo_calculate), 1 SECONDS)
 	..()
 
 /obj/item/rig_module/targeted_ballistic/proc/ammo_calculate()
@@ -532,6 +532,16 @@
 	else
 		tool_reference.moveToNullspace()
 		module.active = FALSE
+
+/datum/action/rig_module/deploy_tool/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	to_chat(user, text = "called ui interact")
+	if(!ui)
+		ui = new(user, src, "RIGModuleTool", name)
+		ui.open()
+
+/datum/action/rig_module/targeted_ballistic/ui_data(mob/user)
+	var/list/data = list()
 
 /*
 Laser Modules!
