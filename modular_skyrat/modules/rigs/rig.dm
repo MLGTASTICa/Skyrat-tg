@@ -58,6 +58,8 @@
 	var/rig_power_use = 25
 	/// The spot holding the deploy undeploy action , it has to be done this way because byond can't find datums ..
 	var/deploy_slot = null
+	/// The amount of time it takes for a rig piece to deloy
+	var/deploy_time = 1 SECOND
 	/// The actions that we add when this rig is deployed , keep in mind that the first action WILL always be available as long as its on the back and always should be the one for booting it up. Has to be done this way because Byond won't let me do it on itself.
 	var/list/datum/action/rig_suit/actions_to_add_rig = list(/datum/action/rig_suit/deploy_undeploy, /datum/action/rig_suit/open_ui)
 	/// A list holding references to the actions after they were initialized
@@ -177,10 +179,10 @@
 			return FALSE
 		ADD_TRAIT(src, TRAIT_NODROP, src)
 		to_chat(wearer,text = "Deploying rig")
-		wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD, src)
-		wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING, src)
-		wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES, src)
-		wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET, src)
+		wearer.equip_to_slot_forcefully(suit_pieces[1],ITEM_SLOT_HEAD)
+		wearer.equip_to_slot_forcefully(suit_pieces[2],ITEM_SLOT_OCLOTHING)
+		wearer.equip_to_slot_forcefully(suit_pieces[3],ITEM_SLOT_GLOVES)
+		wearer.equip_to_slot_forcefully(suit_pieces[4],ITEM_SLOT_FEET)
 		deployed = TRUE
 		for(var/datum/action/rig_suit/action_to_add in action_storage_rig)
 			if(action_to_add != action_storage_rig[deploy_slot])

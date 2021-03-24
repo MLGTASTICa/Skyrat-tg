@@ -79,7 +79,26 @@
 	clothing.deployed = FALSE // This is guaranteed to have it , but to avoid redefining the object we just use a prototype acces.
 	clothing.moveToNullspace()
 
+/obj/item/rig_suit/proc/handle_clothing_toggle(target_piece)
+	var/obj/item/clothing/rig_suit_holder/piece = suit_pieces[target_piece]
+	if(!piece)
+		return FALSE
+	if(piece.deployed)
+		handle_clothing_drop(piece)
+	else
+		if(do_after(wearer, deploy_time))
+			wearer.equip_to_slot_forcefully(piece, null)
+			return TRUE
+		return FALSE
+
 // This things only purpose is to allow me to easily acces the deployed var
 /obj/item/clothing/rig_suit_holder
 	var/deployed = FALSE
+
+/datum/movespeed_modifier/rig
+	variable = TRUE
+	id = "rig"
+	priority = 1
+	movetypes = ALL
+	multiplicative_slowdown = 0
 
