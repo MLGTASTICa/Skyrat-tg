@@ -143,6 +143,42 @@
 				detect_state = PROXIMITY_NEAR
 				break
 
+/obj/item/multitool/door_hacking
+	var/list/door_references = list()
+	var/hacking_delay = 10 SECONDS
+	var/hacking_range = 3
+
+/obj/item/multitool/door_hacking/proc/try_hack(obj/machinery/door/target, mob/living/user)
+	if(!target || QDELETED(target))
+		return FALSE
+	if(get_dist(target, src) > hacking_range)
+		return to_chat(user, text = "The multitool makes a monotone buzz.It can't hack this far away!")
+	if(door_references.Find(target, 1, 0))
+		return target.ui_interact(user)
+	if(do_after(user, hacking_delay))
+		door_references += target
+		target.ui_interact(user)
+		return TRUE
+
+/obj/item/multitool/door_hacking/attack_obj(obj/I, mob/living/user, params)
+	if(istype(I, /obj/machinery/door))
+		var/obj/machinery/door/target = I
+		if(target.panel_open)
+			..()
+		else
+			try_hack(I, user)
+	..()
+
+/obj/item/multitool/door_hacking/attack_hand(mob/user, list/modifiers)
+	. = ..()
+	if(HAS_TRAIT(user, TRAIT_BUDGET_AI))
+		to_chat(user, text = "You toggle off the door interactions of the multitool")
+		REMOVE_TRAIT(user, TRAIT_BUDGET_AI, TRAIT_FROM_TOOL)
+	else
+		to_chat(user, text = "You toggle on the door interactions of the multitool")
+		ADD_TRAIT(user, TRAIT_BUDGET_AI, TRAIT_FROM_TOOL)
+
+
 /mob/camera/ai_eye/remote/ai_detector
 	name = "AI detector eye"
 	ai_detector_visible = FALSE

@@ -1546,8 +1546,11 @@
 			user_toggle_open(usr)
 			. = TRUE
 
+/obj/machinery/door/airlock/ui_state(mob/user)
+	return GLOB.always_state
+
 /obj/machinery/door/airlock/proc/user_allowed(mob/user)
-	return (issilicon(user) && canAIControl(user)) || isAdminGhostAI(user)
+	return ((issilicon(user) && canAIControl(user)) || isAdminGhostAI(user) || HAS_TRAIT(user, TRAIT_BUDGET_AI))
 
 /obj/machinery/door/airlock/proc/shock_restore(mob/user)
 	if(!user_allowed(user))
