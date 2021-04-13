@@ -350,6 +350,9 @@
 	icon_state = "black_turtleneck"
 	worn_icon = 'modular_skyrat/modules/customization/icons/~donator/mob/clothing/uniform.dmi'
 	mutant_variants = NONE
+	can_adjust = FALSE //There wasnt an adjustable sprite anyways
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)	//same armor as a greyshirt - DONOR ITEMS ARE PURELY COSMETIC
+	has_sensor = HAS_SENSORS	//Actually has sensors, to balance the new lack of armor
 
 //Donation reward for Thedragmeme
 /obj/item/clothing/shoes/jackboots/heel
@@ -613,3 +616,13 @@
 	icon_state = "lannese_vambrace"
 	worn_icon = 'modular_skyrat/modules/customization/icons/~donator/mob/clothing/uniform.dmi'
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS|FEET
+
+//Donation reward for Hacker T.Dog
+/obj/item/clothing/suit/scraparmour
+	name = "Scrap Armour"
+	desc = "A shoddily crafted piece of armour. It provides no benefit apart from being clunky."
+	icon = 'modular_skyrat/modules/customization/icons/~donator/obj/clothing/suits.dmi'
+	icon_state = "scraparmor"
+	worn_icon = 'modular_skyrat/modules/customization/icons/~donator/mob/clothing/suit.dmi'
+	worn_icon_state = "scraparmor"
+	body_parts_covered = CHEST

@@ -24,6 +24,7 @@
 	var/nextstate = null
 	var/boltslocked = TRUE
 	var/list/affecting_areas
+	var/being_held_open = FALSE
 
 /obj/machinery/door/firedoor/Initialize()
 	. = ..()
@@ -34,7 +35,10 @@
 	if(!density)
 		. += "<span class='notice'>It is open, but could be <b>pried</b> closed.</span>"
 	else if(!welded)
-		. += "<span class='notice'>It is closed, but could be <i>pried</i> open. Deconstruction would require it to be <b>welded</b> shut.</span>"
+		. += "<span class='notice'>It is closed, but could be <b>pried</b> open.</span>"
+		. += "<span class='notice'>Hold the door open by prying it with <i>left-click</i> and standing next to it.</span>"
+		. += "<span class='notice'>Prying by <i>right-clicking</i> the door will simply open it.</span>"
+		. += "<span class='notice'>Deconstruction would require it to be <b>welded</b> shut.</span>"
 	else if(boltslocked)
 		. += "<span class='notice'>It is <i>welded</i> shut. The floor bolts have been locked by <b>screws</b>.</span>"
 	else
@@ -78,7 +82,7 @@
 	. = ..()
 	INVOKE_ASYNC(src, .proc/latetoggle)
 
-/obj/machinery/door/firedoor/attack_hand(mob/user, list/modifiers)
+/* /obj/machinery/door/firedoor/attack_hand(mob/user, list/modifiers)
 	. = ..()
 	if(.)
 		return
@@ -88,7 +92,7 @@
 
 	user.visible_message("<span class='notice'>[user] bangs on \the [src].</span>", \
 		"<span class='notice'>You bang on \the [src].</span>")
-	playsound(loc, 'sound/effects/glassknock.ogg', 10, FALSE, frequency = 32000)
+	playsound(loc, 'sound/effects/glassknock.ogg', 10, FALSE, frequency = 32000) */ // SKYRAT EDIT CHANGE - MOVED TO modular_skyrat\master_files\game\machinery\doors\firedoor.dm
 
 /obj/machinery/door/firedoor/attackby(obj/item/C, mob/user, params)
 	add_fingerprint(user)
@@ -130,7 +134,26 @@
 		log_game("[key_name(user)] [welded ? "welded":"unwelded"] firedoor [src] with [W] at [AREACOORD(src)]")
 		update_appearance()
 
-/obj/machinery/door/firedoor/try_to_crowbar(obj/item/I, mob/user)
+/// We check for adjacency when using the primary attack.
+/obj/machinery/door/firedoor/try_to_crowbar(obj/item/acting_object, mob/user)
+	if(welded || operating)
+		return
+
+	if(density)
+		being_held_open = TRUE
+		open()
+		if(QDELETED(user))
+			being_held_open = FALSE
+			return
+		RegisterSignal(user, COMSIG_MOVABLE_MOVED, .proc/handle_held_open_adjacency)
+		RegisterSignal(user, COMSIG_LIVING_SET_BODY_POSITION, .proc/handle_held_open_adjacency)
+		RegisterSignal(user, COMSIG_PARENT_QDELETING, .proc/handle_held_open_adjacency)
+		handle_held_open_adjacency(user)
+	else
+		close()
+
+/// A simple toggle for firedoors between on and off
+/obj/machinery/door/firedoor/try_to_crowbar_secondary(obj/item/acting_object, mob/user)
 	if(welded || operating)
 		return
 
@@ -139,6 +162,26 @@
 	else
 		close()
 
+/obj/machinery/door/firedoor/proc/handle_held_open_adjacency(mob/user)
+	SIGNAL_HANDLER
+
+	//Handle qdeletion here
+	if(QDELETED(user))
+		being_held_open = FALSE
+		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(user, COMSIG_LIVING_SET_BODY_POSITION)
+		UnregisterSignal(user, COMSIG_PARENT_QDELETING)
+		return
+
+	var/mob/living/living_user = user
+	if(Adjacent(user) && isliving(user) && (living_user.body_position == STANDING_UP))
+		return
+	being_held_open = FALSE
+	INVOKE_ASYNC(src, .proc/close)
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(user, COMSIG_LIVING_SET_BODY_POSITION)
+	UnregisterSignal(user, COMSIG_PARENT_QDELETING)
+	
 /obj/machinery/door/firedoor/attack_ai(mob/user)
 	add_fingerprint(user)
 	if(welded || operating || machine_stat & NOPOWER)
