@@ -183,6 +183,9 @@
 		for(var/datum/action/rig_suit/action_to_add in action_storage_rig)
 			if(action_to_add != action_storage_rig[deploy_slot])
 				action_to_add.Grant(wearer)
+		var/datum/movespeed_modifier/speed_modifier = new /datum/movespeed_modifier/rig
+		speed_modifier.multiplicative_slowdown = -0.25
+		wearer.add_movespeed_modifier(speed_modifier)
 		power_suit()
 		return TRUE
 	else
@@ -206,8 +209,11 @@
 			handle_clothing_drop(cloth4)
 		for(var/obj/item/clothing/cloth in contents)
 			wearer.equip_to_appropriate_slot(cloth, FALSE, FALSE, FALSE)
+		var/datum/movespeed_modifier/speed_modifier = new /datum/movespeed_modifier/rig
+		speed_modifier.multiplicative_slowdown = 1
+		wearer.add_movespeed_modifier(speed_modifier)
 		unpower_suit()
-
+	wearer.update_movespeed()
 /// Screwdirver act
 /obj/item/rig_suit/screwdriver_act(mob/living/user, obj/item/I)
 	panel = !panel

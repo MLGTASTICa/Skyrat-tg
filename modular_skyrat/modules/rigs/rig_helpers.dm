@@ -83,3 +83,7 @@
 /obj/item/clothing/rig_suit_holder
 	var/deployed = FALSE
 
+/datum/movespeed_modifier/rig
+	id = "Rig"
+	movetypes = ALL
+	multiplicative_slowdown = 0

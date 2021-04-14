@@ -54,4 +54,6 @@
 #define WIRE_EJECTMODULE "Eject Module"
 #define WIRE_EJECTAI "Eject AI"
 #define WIRE_UNLOCK "Unlock"
+#define WIRE_ACCEPT "Accept"
+#define WIRE_DENY "Deny"
 
