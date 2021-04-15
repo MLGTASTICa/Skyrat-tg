@@ -27,11 +27,6 @@
 	var/fire_power_use = 0
 	/// If it got destroyed by an EMP or ruined
 	var/fried = FALSE
-	/// Can be PAI cntrolled?
-	var/PAI_control = FALSE
-	/// is the Pai currently coltrolling this?
-	var/PAI_active = FALSE
-	/// Eee
 	var/list/actions_to_add = list(/datum/action/rig_module, /datum/action/rig_module)
 	/// This is the action storage, adding actions is handled in the item initialize
 	var/list/datum/action/rig_module/action_storage = list()

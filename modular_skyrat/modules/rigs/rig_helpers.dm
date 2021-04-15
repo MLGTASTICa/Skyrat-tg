@@ -79,13 +79,6 @@
 	clothing.deployed = FALSE // This is guaranteed to have it , but to avoid redefining the object we just use a prototype acces.
 	clothing.moveToNullspace()
 
-/obj/item/rig_suit/proc/handle_ai_insertion(/mob/living/silicon/ai/target)
-	RegisterSignal(target, COMSIG_KB_MOVEMENT_NORTH_DOWN, .proc/silicon_move_north)
-	RegisterSignal(target, COMSIG_KB_MOVEMENT_SOUTH_DOWN, .proc/silicon_move_south)
-	RegisterSignal(target, COMSIG_KB_MOVEMENT_WEST_DOWN, .proc/silicon_move_west)
-	RegisterSignal(target, COMSIG_KB_MOVEMENT_EAST_DOWN, .proc/silicon_move_east)
-	AI = target
-
 // This things only purpose is to allow me to easily acces the deployed var
 /obj/item/clothing/rig_suit_holder
 	var/deployed = FALSE

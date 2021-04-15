@@ -14,10 +14,6 @@
 	var/helmet = /obj/item/clothing/head/helmet/rig_suit
 	var/gloves = /obj/item/clothing/gloves/rig_suit
 	var/boots = /obj/item/clothing/shoes/rig_suit
-	/// The AI this rig is currently hosting if any
-	var/mob/living/AI
-	/// If the AI can use its linked abilities
-	var/AIcontrol = FALSE
 	/// The modules that this rig currently has installed
 	var/list/obj/item/rig_module/modules = list()
 	/// A limit on how many modules we can have
