@@ -528,6 +528,23 @@
 		tool_reference.moveToNullspace()
 		module.active = FALSE
 
+/datum/action/rig_module/deploy_tool/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	to_chat(user, text = "called ui interact")
+	if(!ui)
+		ui = new(user, src, "RIGModuleDeployTool", name)
+		ui.open()
+
+/datum/action/rig_module/targeted_ballistic/ui_data(mob/user)
+	var/list/data = list()
+	var/obj/item/rig_module/tool_deploy/handle = module
+	for(var/obj/item/tool in handle)
+		var/list/tool_data = list()
+		tool_data["name"] = tool.name
+		tool_data["reference"] = REF(tool)
+		data["tools"] += tool_data
+
+	return data
 /*
 Laser Modules!
 */

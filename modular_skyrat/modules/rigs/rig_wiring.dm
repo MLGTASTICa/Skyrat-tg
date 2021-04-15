@@ -17,11 +17,6 @@
 		if(WIRE_POWER1, WIRE_POWER2) // Short for a long while.
 			if(RIG.cell)
 				RIG.cell.charge -= rand(100,500)
-		if(WIRE_AI) // Disable or enable AI control
-			RIG.AIcontrol = !RIG.AIcontrol
-		if(WIRE_EJECTAI)
-			RIG.AI.forceMove(RIG.loc)
-			RIG.AI = null
 		if(WIRE_EJECTMODULE)
 			var/obj/item/rig_module/module = pick(RIG.modules)
 			module.forceMove(RIG.loc)
@@ -42,11 +37,6 @@
 				RIG.powered = TRUE
 			else
 				RIG.powered = FALSE
-		if(WIRE_AI) // Disable AI control.
-			if(mend)
-				RIG.AIcontrol = FALSE
-			else
-				RIG.AIcontrol = TRUE
 		if(WIRE_UNLOCK)
 			RIG.locked = 1
 
